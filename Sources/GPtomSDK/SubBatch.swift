@@ -1,6 +1,6 @@
 import Foundation
 
-public struct SubBatch: Codable {
+public struct SubBatch: Codable, Equatable {
     public let closeBatchNumber: String?
     public let saleAmount: Amount?
     public let saleCount: Double?

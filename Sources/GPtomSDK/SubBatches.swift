@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SubBatches: Codable {
+public struct SubBatches: Codable, Equatable {
     public let card: SubBatch?
     public let goCrypto: SubBatch?
     public let cash: SubBatch?

@@ -1,7 +1,7 @@
 import CodableWrappers
 import Foundation
 
-public struct Batch: Codable {
+public struct Batch: Codable, Equatable {
     /** Internal id of the batch, OPEN for pseudo batch with open transactions */
     public var amsId: String
 
