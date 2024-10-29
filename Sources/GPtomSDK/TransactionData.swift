@@ -21,6 +21,7 @@ public struct TransactionData: Codable {
     public let totalAmount: String?
     public let pinOk: Bool?
     public let approvedCode: String?
+    public let authorizationCode: String?
     public let sequenceNumber: String?
 
     @OptionalCoding<ISO8601DateFormatterCoding<ISO>>
@@ -56,7 +57,8 @@ public struct TransactionData: Codable {
                 result: Int?,
                 cardEntryMode: String?,
                 merchantID: String?,
-                amsID: String?)
+                amsID: String?,
+                authorizationCode: String?)
     {
         self.batchNumber = batchNumber
         self.receiptNumber = receiptNumber
@@ -80,5 +82,6 @@ public struct TransactionData: Codable {
         self.cardEntryMode = cardEntryMode
         self.merchantID = merchantID
         self.amsID = amsID
+        self.authorizationCode = authorizationCode
     }
 }
