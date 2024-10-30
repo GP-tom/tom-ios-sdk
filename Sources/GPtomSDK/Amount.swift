@@ -13,7 +13,7 @@ public extension Amount {
     var string: String {
         String(describing: self)
     }
-    
+
     var int64: Int64 {
         .init(truncating: self * 100 as NSDecimalNumber)
     }

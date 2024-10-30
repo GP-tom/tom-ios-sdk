@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum Deeplink {
+public enum Deeplink: Sendable {
     case createTransaction(CreateTransactionParams)
     case cancelTransaction(CancelTransactionParams)
     case transactionDetail(TransactionDetailParams)
@@ -49,13 +49,13 @@ public enum Deeplink {
     }
 }
 
-public enum TransactionType: String, Equatable, CaseIterable, Codable {
+public enum TransactionType: String, Equatable, CaseIterable, Codable, Sendable {
     case cash = "CASH"
     case card = "CARD"
     case goCrypto = "GO_CRYPTO"
 }
 
-public enum ReceiptOption: String, CaseIterable, Codable {
+public enum ReceiptOption: String, CaseIterable, Codable, Sendable {
     case sms = "SMS"
     case email = "EMAIL"
     case qr = "QR"
@@ -63,7 +63,7 @@ public enum ReceiptOption: String, CaseIterable, Codable {
 }
 
 // gptom://transaction/create
-public struct CreateTransactionParams {
+public struct CreateTransactionParams: Sendable {
     public let amount: Amount
     public let clientID: String?
     public let referenceNumber: String?
@@ -124,7 +124,7 @@ public struct CreateTransactionParams {
 }
 
 // gptom://transaction/cancel
-public struct CancelTransactionParams {
+public struct CancelTransactionParams: Sendable {
     public let clientID: String?
     public let amsID: String
     public let redirectUrl: String?
@@ -169,7 +169,7 @@ public struct CancelTransactionParams {
 }
 
 // gptom://transaction/detail
-public struct TransactionDetailParams {
+public struct TransactionDetailParams: Sendable {
     public let amsID: String
 
     public init?(params: [String: String]) {
@@ -183,7 +183,7 @@ public struct TransactionDetailParams {
 }
 
 // gptom://batch/close
-public struct CloseBatchParams {
+public struct CloseBatchParams: Sendable {
     public let clientID: String?
     public let redirectUrl: String?
 
@@ -219,7 +219,7 @@ public struct CloseBatchParams {
 }
 
 // gptom://batch/detail
-public struct BatchDetailParams {
+public struct BatchDetailParams: Sendable {
     public let amsID: String
 
     init?(params: [String: String]) {
@@ -229,7 +229,7 @@ public struct BatchDetailParams {
 }
 
 // gptom://login
-public struct LoginParams {
+public struct LoginParams: Sendable {
     public let username: String
     public let password: String
     public let tid: String?

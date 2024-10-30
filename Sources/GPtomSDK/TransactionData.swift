@@ -5,10 +5,10 @@
 //  Created by Jan Švec on 11.07.2024.
 //
 
-import CodableWrappers
+@preconcurrency import CodableWrappers
 import Foundation
 
-public struct TransactionData: Codable {
+public struct TransactionData: Codable, Sendable {
     public let batchNumber: String?
     public let receiptNumber: String?
     public let terminalID: String?

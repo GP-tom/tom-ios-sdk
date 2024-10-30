@@ -1,7 +1,7 @@
-import CodableWrappers
+@preconcurrency import CodableWrappers
 import Foundation
 
-public struct Batch: Codable, Equatable {
+public struct Batch: Codable, Equatable, Sendable {
     /** Internal id of the batch, OPEN for pseudo batch with open transactions */
     public var amsId: String
 

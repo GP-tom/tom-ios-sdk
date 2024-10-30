@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum CardType: String, Equatable, CaseIterable, Codable {
+public enum CardType: String, Equatable, CaseIterable, Codable, Sendable {
     case discover = "DISCOVER"
     case jcbandVisa = "JCBANDVISA"
     case mastercard = "MASTERCARD"

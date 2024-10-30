@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum DeeplinkResult {
+public enum DeeplinkResult: Sendable {
     case createTransaction(TransactionData?, RefusalCode?, TaskStatus)
     case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus)
     case closeBatch(Batch?, TaskStatus)

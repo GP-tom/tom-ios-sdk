@@ -7,37 +7,37 @@
 
 import Foundation
 
-public enum RefusalCode: String, CaseIterable, Codable {
-    case unknown = "unknown"
-    case approved = "approved"
-    case approvedRequiredIdentification = "approvedRequiredIdentification"
-    case declined = "declined"
-    case expiredCard = "expiredCard"
-    case pinTriesExceeded = "pinTriesExceeded"
-    case callService = "callService"
-    case technicalIssue = "technicalIssue"
-    case invalidRequest = "invalidRequest"
-    case captureCard = "captureCard"
-    case declinedProblemWithCard = "declinedProblemWithCard"
-    case invalidData = "invalidData"
-    case insufficientFunds = "insufficientFunds"
-    case usageLimitReached = "usageLimitReached"
-    case duplicateTransaction = "duplicateTransaction"
-    case amountLimitExceeded = "amountLimitExceeded"
-    case transactionIsNotSupported = "transactionIsNotSupported"
-    case callForAuthorization = "callForAuthorization"
-    case declinedLowAmount = "declinedLowAmount"
-    case pinRequired = "pinRequired"
-    case cardNotSupported = "cardNotSupported"
-    case invalidPin = "invalidPin"
-    case technicalIssueOfTerminal = "technicalIssueOfTerminal"
-    case declinedPurchasePossible = "declinedPurchasePossible"
-    case invalidFormat = "invalidFormat"
-    case delivered = "delivered"
-    case stored = "stored"
-    case noMoreData = "noMoreData"
-    case moreDataExists = "moreDataExists"
-    case invalidSupervisorCard = "invalidSupervisorCard"
+public enum RefusalCode: String, CaseIterable, Codable, Sendable {
+    case unknown
+    case approved
+    case approvedRequiredIdentification
+    case declined
+    case expiredCard
+    case pinTriesExceeded
+    case callService
+    case technicalIssue
+    case invalidRequest
+    case captureCard
+    case declinedProblemWithCard
+    case invalidData
+    case insufficientFunds
+    case usageLimitReached
+    case duplicateTransaction
+    case amountLimitExceeded
+    case transactionIsNotSupported
+    case callForAuthorization
+    case declinedLowAmount
+    case pinRequired
+    case cardNotSupported
+    case invalidPin
+    case technicalIssueOfTerminal
+    case declinedPurchasePossible
+    case invalidFormat
+    case delivered
+    case stored
+    case noMoreData
+    case moreDataExists
+    case invalidSupervisorCard
 
     public var isApproved: Bool {
         switch self {
@@ -45,7 +45,7 @@ public enum RefusalCode: String, CaseIterable, Codable {
         default: false
         }
     }
-    
+
     public static func from(code: Int) -> RefusalCode {
         switch code {
         case 0...2, 5...10, 952...954:
