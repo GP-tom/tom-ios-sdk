@@ -20,7 +20,6 @@ public struct TransactionData: Codable {
     public let amount: String?
     public let totalAmount: String?
     public let pinOk: Bool?
-    public let approvedCode: String?
     public let authorizationCode: String?
     public let sequenceNumber: String?
 
@@ -47,7 +46,6 @@ public struct TransactionData: Codable {
                 amount: String?,
                 totalAmount: String?,
                 pinOk: Bool?,
-                approvedCode: String?,
                 sequenceNumber: String?,
                 date: Date?,
                 cardType: CardType?,
@@ -71,7 +69,6 @@ public struct TransactionData: Codable {
         self.amount = amount
         self.totalAmount = totalAmount
         self.pinOk = pinOk
-        self.approvedCode = approvedCode
         self.sequenceNumber = sequenceNumber
         self.date = date
         self.cardType = cardType
