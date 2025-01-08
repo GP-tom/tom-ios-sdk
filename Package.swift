@@ -12,15 +12,11 @@ let package = Package(
             name: "GPtomSDK",
             targets: ["GPtomSDK"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/GottaGetSwifty/CodableWrappers.git", .upToNextMajor(from: "3.0.1")),
-    ],
+    dependencies: [],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "GPtomSDK",
-            dependencies: [
-                "CodableWrappers",
-            ]),
+            dependencies: []),
     ])

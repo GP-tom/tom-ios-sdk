@@ -1,4 +1,3 @@
-@preconcurrency import CodableWrappers
 import Foundation
 
 public struct Batch: Codable, Equatable, Sendable {
@@ -12,15 +11,12 @@ public struct Batch: Codable, Equatable, Sendable {
 
     public let currency: String?
 
-    @OptionalCoding<ISO8601DateFormatterCoding<ISO>>
     public var date: Date?
 
-    @OptionalCoding<ISO8601DateFormatterCoding<ISO>>
     public var firstTransactionDate: Date?
 
     public let invalidCount: Double?
 
-    @OptionalCoding<ISO8601DateFormatterCoding<ISO>>
     public var previousBatchDate: Date?
 
     public let saleAmount: Amount?
@@ -37,7 +33,7 @@ public struct Batch: Codable, Equatable, Sendable {
 
     public let voidCount: Double?
 
-    public var isOpen: Bool { amsId == "OPEN" }
+    public var isOpen: Bool { self.amsId == "OPEN" }
 
     public init(amsId: String,
                 batchNumber: String? = nil,
@@ -70,5 +66,79 @@ public struct Batch: Codable, Equatable, Sendable {
         self.totalCount = totalCount
         self.voidAmount = voidAmount
         self.voidCount = voidCount
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.amsId = try container.decode(String.self, forKey: .amsId)
+        self.batchNumber = try container.decodeIfPresent(String.self, forKey: .batchNumber)
+        self.communicationId = try container.decodeIfPresent(String.self, forKey: .communicationId)
+        self.currency = try container.decodeIfPresent(String.self, forKey: .currency)
+
+        if let date = try container.decodeIfPresent(String.self, forKey: .date) {
+            self.date = ISO.iso8601DateFormatter.date(from: date)
+        }
+
+        if let date = try container.decodeIfPresent(String.self, forKey: .firstTransactionDate) {
+            self.firstTransactionDate = ISO.iso8601DateFormatter.date(from: date)
+        }
+
+        if let date = try container.decodeIfPresent(String.self, forKey: .previousBatchDate) {
+            self.previousBatchDate = ISO.iso8601DateFormatter.date(from: date)
+        }
+
+        self.invalidCount = try container.decodeIfPresent(Double.self, forKey: .invalidCount)
+        self.saleAmount = try container.decodeIfPresent(Amount.self, forKey: .saleAmount)
+        self.saleCount = try container.decodeIfPresent(Double.self, forKey: .saleCount)
+        self.subBatches = try container.decodeIfPresent(SubBatches.self, forKey: .subBatches)
+        self.totalAmount = try container.decodeIfPresent(Amount.self, forKey: .totalAmount)
+        self.totalCount = try container.decodeIfPresent(Double.self, forKey: .totalCount)
+        self.voidAmount = try container.decodeIfPresent(Amount.self, forKey: .voidAmount)
+        self.voidCount = try container.decodeIfPresent(Double.self, forKey: .voidCount)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.amsId, forKey: .amsId)
+        try container.encodeIfPresent(self.batchNumber, forKey: .batchNumber)
+        try container.encodeIfPresent(self.communicationId, forKey: .communicationId)
+        try container.encodeIfPresent(self.currency, forKey: .currency)
+
+        let date = date.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
+        try container.encodeIfPresent(date, forKey: .date)
+
+        let firstTransactionDate = firstTransactionDate.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
+        try container.encodeIfPresent(firstTransactionDate, forKey: .firstTransactionDate)
+
+        try container.encodeIfPresent(self.invalidCount, forKey: .invalidCount)
+
+        let previousBatchDate = previousBatchDate.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
+        try container.encodeIfPresent(previousBatchDate, forKey: .previousBatchDate)
+
+        try container.encodeIfPresent(self.saleAmount, forKey: .saleAmount)
+        try container.encodeIfPresent(self.saleCount, forKey: .saleCount)
+        try container.encodeIfPresent(self.subBatches, forKey: .subBatches)
+        try container.encodeIfPresent(self.totalAmount, forKey: .totalAmount)
+        try container.encodeIfPresent(self.totalCount, forKey: .totalCount)
+        try container.encodeIfPresent(self.voidAmount, forKey: .voidAmount)
+        try container.encodeIfPresent(self.voidCount, forKey: .voidCount)
+    }
+
+    public enum CodingKeys: CodingKey {
+        case amsId
+        case batchNumber
+        case communicationId
+        case currency
+        case date
+        case firstTransactionDate
+        case invalidCount
+        case previousBatchDate
+        case saleAmount
+        case saleCount
+        case subBatches
+        case totalAmount
+        case totalCount
+        case voidAmount
+        case voidCount
     }
 }
