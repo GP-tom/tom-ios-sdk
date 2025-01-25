@@ -11,20 +11,24 @@ public struct SubBatches: Codable, Equatable, Sendable {
     public let card: SubBatch?
     public let goCrypto: SubBatch?
     public let cash: SubBatch?
+    public let qr: SubBatch?
 
     public enum CodingKeys: String, CodingKey {
         case card = "CARD"
         case goCrypto = "GO_CRYPTO"
         case cash = "CASH"
+        case qr = "ACCOUNT_PAYMENT"
     }
 
     public init(card: SubBatch? = nil,
                 goCrypto: SubBatch? = nil,
-                cash: SubBatch? = nil)
+                cash: SubBatch? = nil,
+                qr: SubBatch? = nil)
     {
         self.card = card
         self.goCrypto = goCrypto
         self.cash = cash
+        self.qr = qr
     }
 
     public init(from decoder: Decoder) throws {
@@ -33,6 +37,7 @@ public struct SubBatches: Codable, Equatable, Sendable {
         self.card = try container.decodeIfPresent(SubBatch.self, forKey: .card)
         self.goCrypto = try container.decodeIfPresent(SubBatch.self, forKey: .goCrypto)
         self.cash = try container.decodeIfPresent(SubBatch.self, forKey: .cash)
+        self.qr = try container.decodeIfPresent(SubBatch.self, forKey: .qr)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -40,5 +45,6 @@ public struct SubBatches: Codable, Equatable, Sendable {
         try container.encodeIfPresent(self.card, forKey: .card)
         try container.encodeIfPresent(self.goCrypto, forKey: .goCrypto)
         try container.encodeIfPresent(self.cash, forKey: .cash)
+        try container.encodeIfPresent(self.qr, forKey: .qr)
     }
 }
