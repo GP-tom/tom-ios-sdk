@@ -35,6 +35,14 @@ public struct Batch: Codable, Equatable, Sendable {
 
     public var isOpen: Bool { self.amsId == "OPEN" }
 
+    public let tipAmount: Amount?
+
+    public let tipCount: Int?
+
+    public let tipAverage: Amount?
+
+    public let tipAveragePercentage: Double?
+
     public init(amsId: String,
                 batchNumber: String? = nil,
                 communicationId: String? = nil,
@@ -49,7 +57,11 @@ public struct Batch: Codable, Equatable, Sendable {
                 totalAmount: Amount? = nil,
                 totalCount: Double? = nil,
                 voidAmount: Amount? = nil,
-                voidCount: Double? = nil)
+                voidCount: Double? = nil,
+                tipAmount: Amount? = nil,
+                tipCount: Int? = nil,
+                tipAverage: Amount? = nil,
+                tipAveragePercentage: Double? = nil)
     {
         self.amsId = amsId
         self.batchNumber = batchNumber
@@ -66,6 +78,10 @@ public struct Batch: Codable, Equatable, Sendable {
         self.totalCount = totalCount
         self.voidAmount = voidAmount
         self.voidCount = voidCount
+        self.tipAmount = tipAmount
+        self.tipCount = tipCount
+        self.tipAverage = tipAverage
+        self.tipAveragePercentage = tipAveragePercentage
     }
 
     public init(from decoder: any Decoder) throws {
@@ -95,6 +111,10 @@ public struct Batch: Codable, Equatable, Sendable {
         self.totalCount = try container.decodeIfPresent(Double.self, forKey: .totalCount)
         self.voidAmount = try container.decodeIfPresent(Amount.self, forKey: .voidAmount)
         self.voidCount = try container.decodeIfPresent(Double.self, forKey: .voidCount)
+        self.tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount)
+        self.tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount)
+        self.tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage)
+        self.tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -122,6 +142,10 @@ public struct Batch: Codable, Equatable, Sendable {
         try container.encodeIfPresent(self.totalCount, forKey: .totalCount)
         try container.encodeIfPresent(self.voidAmount, forKey: .voidAmount)
         try container.encodeIfPresent(self.voidCount, forKey: .voidCount)
+        try container.encodeIfPresent(self.tipAmount, forKey: .tipAmount)
+        try container.encodeIfPresent(self.tipCount, forKey: .tipCount)
+        try container.encodeIfPresent(self.tipAverage, forKey: .tipAverage)
+        try container.encodeIfPresent(self.tipAveragePercentage, forKey: .tipAveragePercentage)
     }
 
     public enum CodingKeys: CodingKey {
@@ -140,5 +164,9 @@ public struct Batch: Codable, Equatable, Sendable {
         case totalCount
         case voidAmount
         case voidCount
+        case tipAmount
+        case tipCount
+        case tipAverage
+        case tipAveragePercentage
     }
 }
