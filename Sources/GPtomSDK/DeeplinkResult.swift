@@ -9,6 +9,7 @@ import Foundation
 
 public enum DeeplinkResult: Sendable {
     case createTransaction(TransactionData?, RefusalCode?, TaskStatus)
+    case refundTransaction(TransactionData?, RefusalCode?, TaskStatus)
     case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus)
     case closeBatch(Batch?, TaskStatus)
 
@@ -25,6 +26,10 @@ public enum DeeplinkResult: Sendable {
         } else if urlString.contains("transaction/cancel") {
             return parseTransactionResult(params: params)
                 .flatMap { .cancelTransaction($0.0, $0.1, $0.2) }
+
+        } else if urlString.contains("transaction/refund") {
+            return parseTransactionResult(params: params)
+                .flatMap { .refundTransaction($0.0, $0.1, $0.2) }
 
         } else if urlString.contains("batch/close") {
             guard let status = parseStatus(params: params)
