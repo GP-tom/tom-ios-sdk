@@ -10,6 +10,7 @@ import Foundation
 public enum Deeplink: Sendable {
     case createTransaction(CreateTransactionParams)
     case cancelTransaction(CancelTransactionParams)
+    case refundTransaction(RefundTransactionParams)
     case transactionDetail(TransactionDetailParams)
     case closeBatch(CloseBatchParams)
     case batchDetail(BatchDetailParams)
@@ -27,6 +28,8 @@ public enum Deeplink: Sendable {
             return CancelTransactionParams(params: params).flatMap { .cancelTransaction($0) }
         } else if urlString.contains("transaction/detail") {
             return TransactionDetailParams(params: params).flatMap { .transactionDetail($0) }
+        } else if urlString.contains("transaction/refund") {
+            return RefundTransactionParams(params: params).flatMap { .refundTransaction($0) }
         } else if urlString.contains("batch/close") {
             return CloseBatchParams(params: params).flatMap { .closeBatch($0) }
         } else if urlString.contains("batch/detail") {
@@ -62,6 +65,9 @@ public enum ReceiptOption: String, CaseIterable, Codable, Sendable {
     case qr = "QR"
     case print = "PRINT"
 }
+
+// gptom://transaction/refund
+public typealias RefundTransactionParams = CreateTransactionParams
 
 // gptom://transaction/create
 public struct CreateTransactionParams: Sendable {
