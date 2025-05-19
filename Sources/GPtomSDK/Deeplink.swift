@@ -15,7 +15,7 @@ public enum Deeplink: Sendable {
     case closeBatch(CloseBatchParams)
     case batchDetail(BatchDetailParams)
     case login(LoginParams)
-    case status
+    case status(StatusParams)
 
     public static func from(url: URL) -> Deeplink? {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -38,7 +38,7 @@ public enum Deeplink: Sendable {
         } else if urlString.contains("login") {
             return LoginParams(params: params).flatMap { .login($0) }
         } else if urlString.contains("status") {
-            return .status
+            return StatusParams(params: params).flatMap { .status($0) }
         } else {
             return nil
         }
@@ -254,5 +254,18 @@ public struct LoginParams: Sendable {
         self.password = password
 
         tid = params["tid"]
+    }
+}
+
+// gptom://status
+public struct StatusParams: Sendable {
+    public let redirectUrl: String
+
+    init?(params: [String: String]) {
+        guard
+            let redirectUrl = params["redirectUrl"]
+        else { return nil }
+
+        self.redirectUrl = redirectUrl
     }
 }
