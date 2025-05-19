@@ -28,7 +28,7 @@ public struct UserInfo: Codable, Equatable, Sendable {
     public let tipEnabled: Bool
     public let printerAvailable: Bool
     public let manualTransactionRestricted: Bool
-    public let merchantLocation: String
+    public let merchantLocation: Address
 
     public init(
         clientId: String,
@@ -40,7 +40,7 @@ public struct UserInfo: Codable, Equatable, Sendable {
         tipEnabled: Bool,
         printerAvailable: Bool,
         manualTransactionRestricted: Bool,
-        merchantLocation: String
+        merchantLocation: Address
     ) {
         self.clientId = clientId
         self.email = email
@@ -52,5 +52,36 @@ public struct UserInfo: Codable, Equatable, Sendable {
         self.printerAvailable = printerAvailable
         self.manualTransactionRestricted = manualTransactionRestricted
         self.merchantLocation = merchantLocation
+    }
+}
+
+public struct Address: Codable, Equatable, Sendable {
+    public var city: String?
+    public var county: String?
+    public var house: String?
+    public var location: String?
+    public var street: String?
+    public var zip: String?
+
+    public var streetWithNumber: String? {
+        if let street, let house {
+            return "\(street) \(house)"
+        }
+
+        return nil
+    }
+
+    public init(city: String? = nil,
+                county: String? = nil,
+                house: String? = nil,
+                location: String? = nil,
+                street: String? = nil,
+                zip: String? = nil) {
+        self.city = city
+        self.county = county
+        self.house = house
+        self.location = location
+        self.street = street
+        self.zip = zip
     }
 }
