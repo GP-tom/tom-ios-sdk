@@ -12,6 +12,7 @@ public enum DeeplinkResult: Sendable {
     case refundTransaction(TransactionData?, RefusalCode?, TaskStatus)
     case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus)
     case closeBatch(Batch?, TaskStatus)
+    case status(AppStatus)
 
     public static func from(url: URL) -> DeeplinkResult? {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -40,6 +41,10 @@ public enum DeeplinkResult: Sendable {
             let batch = params["batch"].flatMap { try? Batch.decode(from: $0) }
             return .closeBatch(batch, status)
 
+        } else if urlString.contains("status") {
+            return params["status"]
+                .flatMap { try? AppStatus.decode(from: $0) }
+                .flatMap { .status($0) }
         } else {
             return nil
         }

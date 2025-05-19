@@ -15,6 +15,7 @@ public enum Deeplink: Sendable {
     case closeBatch(CloseBatchParams)
     case batchDetail(BatchDetailParams)
     case login(LoginParams)
+    case status
 
     public static func from(url: URL) -> Deeplink? {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -36,6 +37,8 @@ public enum Deeplink: Sendable {
             return BatchDetailParams(params: params).flatMap { .batchDetail($0) }
         } else if urlString.contains("login") {
             return LoginParams(params: params).flatMap { .login($0) }
+        } else if urlString.contains("status") {
+            return .status
         } else {
             return nil
         }
