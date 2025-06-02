@@ -21,7 +21,7 @@ public struct AppStatus: Codable, Equatable, Sendable {
 public struct UserInfo: Codable, Equatable, Sendable {
     public let clientId: String
     public let email: String
-    public let businessId: String
+    public let businessId: String?
     public let vatId: String?
     public let tid: String
     public let mid: String
@@ -33,7 +33,7 @@ public struct UserInfo: Codable, Equatable, Sendable {
     public init(
         clientId: String,
         email: String,
-        businessId: String,
+        businessId: String? = nil,
         vatId: String? = nil,
         tid: String,
         mid: String,
@@ -76,7 +76,8 @@ public struct Address: Codable, Equatable, Sendable {
                 house: String? = nil,
                 location: String? = nil,
                 street: String? = nil,
-                zip: String? = nil) {
+                zip: String? = nil)
+    {
         self.city = city
         self.county = county
         self.house = house
