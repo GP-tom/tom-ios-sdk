@@ -60,6 +60,7 @@ public enum TransactionType: String, Equatable, CaseIterable, Codable, Sendable 
     case card = "CARD"
     case goCrypto = "GO_CRYPTO"
     case qr = "ACCOUNT_PAYMENT"
+    case blik = "BLIK"
 }
 
 public enum ReceiptOption: String, CaseIterable, Codable, Sendable {
