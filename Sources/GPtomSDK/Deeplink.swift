@@ -77,7 +77,7 @@ public typealias RefundTransactionParams = CreateTransactionParams
 public struct CreateTransactionParams: Sendable {
     // optional id that can be used to access transaction detail instead of amsId.
     // can only be used locally on the device that created the transaction
-    public let requestId: String?
+    public let requestID: String?
 
     public let amount: Amount
     public let clientID: String?
@@ -94,7 +94,7 @@ public struct CreateTransactionParams: Sendable {
     public let orderId: String?
 
     public init(
-        requestId: String? = nil,
+        requestID: String? = nil,
         amount: Amount,
         clientID: String? = nil,
         referenceNumber: String? = nil,
@@ -108,7 +108,7 @@ public struct CreateTransactionParams: Sendable {
         orderId: String? = nil,
         transactionType: TransactionType? = nil)
     {
-        self.requestId = requestId
+        self.requestID = requestID
         self.amount = amount
         self.referenceNumber = referenceNumber
         self.orderId = orderId
@@ -127,7 +127,7 @@ public struct CreateTransactionParams: Sendable {
         guard let amount = params["amount"].flatMap({ Int64($0) }) else { return nil }
         self.amount = Decimal(amount) / 100
 
-        requestId = params["requestId"]
+        requestID = params["requestID"]
         clientID = params["clientID"]
         referenceNumber = params["originReferenceNum"]
         printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
@@ -146,7 +146,7 @@ public struct CreateTransactionParams: Sendable {
 public struct CancelTransactionParams: Sendable {
     // optional id that can be used to access transaction detail instead of amsId.
     // can only be used locally on the device that created the transaction
-    public let requestId: String?
+    public let requestID: String?
 
     public let clientID: String?
     public let amsID: String
@@ -158,7 +158,7 @@ public struct CancelTransactionParams: Sendable {
     public let clientEmail: String?
 
     public init(
-        requestId: String? = nil,
+        requestID: String? = nil,
         clientID: String? = nil,
         amsID: String,
         printByPaymentApp: Bool? = nil,
@@ -168,7 +168,7 @@ public struct CancelTransactionParams: Sendable {
         clientEmail: String? = nil,
         orderId: String? = nil)
     {
-        self.requestId = requestId
+        self.requestID = requestID
         self.clientID = clientID
         self.printByPaymentApp = printByPaymentApp
         self.amsID = amsID
@@ -184,7 +184,7 @@ public struct CancelTransactionParams: Sendable {
         guard let amsID = params["amsID"] else { return nil }
         self.amsID = amsID
 
-        requestId = params["requestId"]
+        requestID = params["requestID"]
 
         redirectUrl = params["redirectUrl"]
         printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
@@ -198,20 +198,20 @@ public struct CancelTransactionParams: Sendable {
 // gptom://transaction/detail
 public struct TransactionDetailParams: Sendable {
     public let amsID: String?
-    public let requestId: String?
+    public let requestID: String?
 
     public init?(params: [String: String]) {
         amsID = params["amsID"]
-        requestId = params["requestId"]
+        requestID = params["requestID"]
 
-        if amsID == nil && requestId == nil {
+        if amsID == nil && requestID == nil {
             return nil
         }
     }
 
-    public init(amsID: String? = nil, requestId: String? = nil) {
+    public init(amsID: String? = nil, requestID: String? = nil) {
         self.amsID = amsID
-        self.requestId = requestId
+        self.requestID = requestID
     }
 }
 
