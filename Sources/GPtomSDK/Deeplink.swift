@@ -75,6 +75,10 @@ public typealias RefundTransactionParams = CreateTransactionParams
 
 // gptom://transaction/create
 public struct CreateTransactionParams: Sendable {
+    // optional id that can be used to access transaction detail instead of amsId.
+    // can only be used locally on the device that created the transaction
+    public let requestId: String?
+
     public let amount: Amount
     public let clientID: String?
     public let referenceNumber: String?
@@ -89,19 +93,22 @@ public struct CreateTransactionParams: Sendable {
     public let clientEmail: String?
     public let orderId: String?
 
-    public init(amount: Amount,
-                clientID: String? = nil,
-                referenceNumber: String? = nil,
-                printByPaymentApp: Bool? = nil,
-                tipAmount: Amount? = nil,
-                redirectUrl: String? = nil,
-                tipCollect: Bool? = nil,
-                preferableReceiptType: ReceiptOption? = nil,
-                clientPhone: String? = nil,
-                clientEmail: String? = nil,
-                orderId: String? = nil,
-                transactionType: TransactionType? = nil)
+    public init(
+        requestId: String? = nil,
+        amount: Amount,
+        clientID: String? = nil,
+        referenceNumber: String? = nil,
+        printByPaymentApp: Bool? = nil,
+        tipAmount: Amount? = nil,
+        redirectUrl: String? = nil,
+        tipCollect: Bool? = nil,
+        preferableReceiptType: ReceiptOption? = nil,
+        clientPhone: String? = nil,
+        clientEmail: String? = nil,
+        orderId: String? = nil,
+        transactionType: TransactionType? = nil)
     {
+        self.requestId = requestId
         self.amount = amount
         self.referenceNumber = referenceNumber
         self.orderId = orderId
@@ -120,6 +127,7 @@ public struct CreateTransactionParams: Sendable {
         guard let amount = params["amount"].flatMap({ Int64($0) }) else { return nil }
         self.amount = Decimal(amount) / 100
 
+        requestId = params["requestId"]
         clientID = params["clientID"]
         referenceNumber = params["originReferenceNum"]
         printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
@@ -136,6 +144,10 @@ public struct CreateTransactionParams: Sendable {
 
 // gptom://transaction/cancel
 public struct CancelTransactionParams: Sendable {
+    // optional id that can be used to access transaction detail instead of amsId.
+    // can only be used locally on the device that created the transaction
+    public let requestId: String?
+
     public let clientID: String?
     public let amsID: String
     public let redirectUrl: String?
@@ -146,6 +158,7 @@ public struct CancelTransactionParams: Sendable {
     public let clientEmail: String?
 
     public init(
+        requestId: String? = nil,
         clientID: String? = nil,
         amsID: String,
         printByPaymentApp: Bool? = nil,
@@ -155,6 +168,7 @@ public struct CancelTransactionParams: Sendable {
         clientEmail: String? = nil,
         orderId: String? = nil)
     {
+        self.requestId = requestId
         self.clientID = clientID
         self.printByPaymentApp = printByPaymentApp
         self.amsID = amsID
@@ -170,6 +184,8 @@ public struct CancelTransactionParams: Sendable {
         guard let amsID = params["amsID"] else { return nil }
         self.amsID = amsID
 
+        requestId = params["requestId"]
+
         redirectUrl = params["redirectUrl"]
         printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
 
@@ -181,15 +197,21 @@ public struct CancelTransactionParams: Sendable {
 
 // gptom://transaction/detail
 public struct TransactionDetailParams: Sendable {
-    public let amsID: String
+    public let amsID: String?
+    public let requestId: String?
 
     public init?(params: [String: String]) {
-        guard let amsID = params["amsID"] else { return nil }
-        self.amsID = amsID
+        amsID = params["amsID"]
+        requestId = params["requestId"]
+
+        if amsID == nil && requestId == nil {
+            return nil
+        }
     }
 
-    public init(amsID: String) {
+    public init(amsID: String? = nil, requestId: String? = nil) {
         self.amsID = amsID
+        self.requestId = requestId
     }
 }
 
