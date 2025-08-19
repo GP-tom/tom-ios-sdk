@@ -19,7 +19,7 @@ public struct SubBatches: Codable, Equatable, Sendable {
         case goCrypto = "GO_CRYPTO"
         case cash = "CASH"
         case qr = "ACCOUNT_PAYMENT"
-        case blik = "BLIK"
+        case blik = "BLIK_PAYMENT"
     }
 
     public init(card: SubBatch? = nil,
