@@ -55,21 +55,6 @@ public enum Deeplink: Sendable {
     }
 }
 
-public enum TransactionType: String, Equatable, CaseIterable, Codable, Sendable {
-    case cash = "CASH"
-    case card = "CARD"
-    case goCrypto = "GO_CRYPTO"
-    case qr = "ACCOUNT_PAYMENT"
-    case blik = "BLIK_PAYMENT"
-}
-
-public enum ReceiptOption: String, CaseIterable, Codable, Sendable {
-    case sms = "SMS"
-    case email = "EMAIL"
-    case qr = "QR"
-    case print = "PRINT"
-}
-
 // gptom://transaction/refund
 public typealias RefundTransactionParams = CreateTransactionParams
 
