@@ -30,6 +30,7 @@ public struct TransactionData: Codable, Sendable {
     public let cardEntryMode: String?
     public let merchantID: String?
     public let amsID: String? // Internal GP tom transaction ID, used for cancelling transaction
+    public let blikCode: String? // Code used in BLIK transaction
 
     public init(batchNumber: String?,
                 receiptNumber: String?,
@@ -52,7 +53,8 @@ public struct TransactionData: Codable, Sendable {
                 cardEntryMode: String?,
                 merchantID: String?,
                 amsID: String?,
-                authorizationCode: String?)
+                authorizationCode: String?,
+                blikCode: String?)
     {
         self.batchNumber = batchNumber
         self.receiptNumber = receiptNumber
@@ -76,6 +78,7 @@ public struct TransactionData: Codable, Sendable {
         self.merchantID = merchantID
         self.amsID = amsID
         self.authorizationCode = authorizationCode
+        self.blikCode = blikCode
     }
 
     public init(from decoder: any Decoder) throws {
@@ -106,6 +109,7 @@ public struct TransactionData: Codable, Sendable {
         self.cardEntryMode = try container.decodeIfPresent(String.self, forKey: .cardEntryMode)
         self.merchantID = try container.decodeIfPresent(String.self, forKey: .merchantID)
         self.amsID = try container.decodeIfPresent(String.self, forKey: .amsID)
+        self.blikCode = try container.decodeIfPresent(String.self, forKey: .blikCode)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -135,6 +139,7 @@ public struct TransactionData: Codable, Sendable {
         try container.encodeIfPresent(self.cardEntryMode, forKey: .cardEntryMode)
         try container.encodeIfPresent(self.merchantID, forKey: .merchantID)
         try container.encodeIfPresent(self.amsID, forKey: .amsID)
+        try container.encodeIfPresent(self.blikCode, forKey: .blikCode)
     }
 
     enum CodingKeys: CodingKey {
@@ -160,5 +165,6 @@ public struct TransactionData: Codable, Sendable {
         case cardEntryMode
         case merchantID
         case amsID
+        case blikCode
     }
 }
