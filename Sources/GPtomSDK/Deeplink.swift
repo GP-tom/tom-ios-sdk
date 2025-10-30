@@ -68,6 +68,23 @@ public enum Deeplink: Sendable {
             return nil
         }
     }
+
+    public var redirectUrl: String? {
+        switch self {
+        case .createTransaction(let params):
+            return params.redirectUrl
+        case .cancelTransaction(let params):
+            return params.redirectUrl
+        case .refundTransaction(let params):
+            return params.redirectUrl
+        case .status(let params):
+            return params.redirectUrl
+        case .closeBatch(let params):
+            return params.redirectUrl
+        default:
+            return nil
+        }
+    }
 }
 
 // gptom://transaction/refund
