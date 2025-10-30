@@ -53,6 +53,21 @@ public enum Deeplink: Sendable {
 
         return items
     }
+
+    public var clientID: String? {
+        switch self {
+        case .createTransaction(let params):
+            return params.clientID
+        case .cancelTransaction(let params):
+            return params.clientID
+        case .refundTransaction(let params):
+            return params.clientID
+        case .closeBatch(let params):
+            return params.clientID
+        default:
+            return nil
+        }
+    }
 }
 
 // gptom://transaction/refund
