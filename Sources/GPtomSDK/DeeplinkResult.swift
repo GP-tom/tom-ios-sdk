@@ -8,10 +8,10 @@
 import Foundation
 
 public enum DeeplinkResult: Sendable {
-    case createTransaction(TransactionData?, RefusalCode?, TaskStatus)
-    case refundTransaction(TransactionData?, RefusalCode?, TaskStatus)
-    case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus)
-    case closeBatch(Batch?, TaskStatus)
+    case createTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
+    case refundTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
+    case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
+    case closeBatch(Batch?, TaskStatus, DeeplinkError?)
     case status(AppStatus?, TaskStatus)
 
     public static func from(url: URL) -> DeeplinkResult? {
@@ -22,24 +22,25 @@ public enum DeeplinkResult: Sendable {
 
         if urlString.contains("transaction/create") {
             return parseTransactionResult(params: params)
-                .flatMap { .createTransaction($0.0, $0.1, $0.2) }
+                .flatMap { .createTransaction($0.0, $0.1, $0.2, $0.3) }
 
         } else if urlString.contains("transaction/cancel") {
             return parseTransactionResult(params: params)
-                .flatMap { .cancelTransaction($0.0, $0.1, $0.2) }
+                .flatMap { .cancelTransaction($0.0, $0.1, $0.2, $0.3) }
 
         } else if urlString.contains("transaction/refund") {
             return parseTransactionResult(params: params)
-                .flatMap { .refundTransaction($0.0, $0.1, $0.2) }
+                .flatMap { .refundTransaction($0.0, $0.1, $0.2, $0.3) }
 
         } else if urlString.contains("batch/close") {
-            guard let status = parseStatus(params: params)
+            guard let status = parseStatus(params: params),
+                  let error = parseError(params: params)
             else {
                 return nil
             }
 
             let batch = params["batch"].flatMap { try? Batch.decode(from: $0) }
-            return .closeBatch(batch, status)
+            return .closeBatch(batch, status, error)
 
         } else if urlString.contains("appStatus") {
             guard let status = parseStatus(params: params)
@@ -58,7 +59,11 @@ public enum DeeplinkResult: Sendable {
         return params["status"].flatMap { TaskStatus(rawValue: $0) }
     }
 
-    private static func parseTransactionResult(params: [String: String]) -> (TransactionData?, RefusalCode?, TaskStatus)? {
+    private static func parseError(params: [String: String]) -> DeeplinkError? {
+        return params["error"].flatMap { DeeplinkError(rawValue: $0) }
+    }
+
+    private static func parseTransactionResult(params: [String: String]) -> (TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)? {
         guard let status = parseStatus(params: params)
         else {
             return nil
@@ -66,8 +71,9 @@ public enum DeeplinkResult: Sendable {
 
         let receipt = params["receipt"].flatMap { try? TransactionData.decode(from: $0) }
         let refusalCode = params["code"].flatMap { RefusalCode(rawValue: $0) }
+        let error = parseError(params: params)
 
-        return (receipt, refusalCode, status)
+        return (receipt, refusalCode, status, error)
     }
 
     private static func convertQueryToDictionary(queryItems: [URLQueryItem]) -> [String: String] {
