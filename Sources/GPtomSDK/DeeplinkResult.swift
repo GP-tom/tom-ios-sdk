@@ -33,13 +33,15 @@ public enum DeeplinkResult: Sendable {
                 .flatMap { .refundTransaction($0.0, $0.1, $0.2, $0.3) }
 
         } else if urlString.contains("batch/close") {
-            guard let status = parseStatus(params: params),
-                  let error = parseError(params: params)
+            guard let status = parseStatus(params: params)
             else {
                 return nil
             }
 
+            let error = parseError(params: params)
+
             let batch = params["batch"].flatMap { try? Batch.decode(from: $0) }
+
             return .closeBatch(batch, status, error)
 
         } else if urlString.contains("appStatus") {
