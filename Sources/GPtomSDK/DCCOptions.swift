@@ -9,14 +9,22 @@ public struct DCCOptions: Codable, Equatable, Sendable {
     public let txnId: String?
     public let isDecline: Bool?
 
-    func copy(txnId: String, isDecline: Bool) -> DCCOptions {
+    func copy(txnId: String? = nil, isDecline: Bool? = nil) -> Self {
         .init(amount: amount,
               currencyCode: currencyCode,
               effectiveRate: effectiveRate,
               markUpRate: markUpRate,
               regionSchemaIndicator: regionSchemaIndicator,
-              txnId: txnId,
-              isDecline: isDecline)
+              txnId: txnId ?? self.txnId,
+              isDecline: isDecline ?? self.isDecline)
+    }
+
+    public func add(transactionId: String) -> Self {
+        copy(txnId: transactionId)
+    }
+
+    public func accept(value: Bool) -> Self {
+        copy(isDecline: !value)
     }
 }
 
