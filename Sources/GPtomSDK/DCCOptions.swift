@@ -7,7 +7,7 @@ public struct DCCOptions: Codable, Equatable, Sendable {
     public let markUpRate: String
     public let regionSchemaIndicator: String
     public let txnId: String?
-    public let isDecline: Bool?
+    public let isDecline: String?
 
     func copy(txnId: String? = nil, isDecline: Bool? = nil) -> Self {
         .init(amount: amount,
@@ -16,7 +16,7 @@ public struct DCCOptions: Codable, Equatable, Sendable {
               markUpRate: markUpRate,
               regionSchemaIndicator: regionSchemaIndicator,
               txnId: txnId ?? self.txnId,
-              isDecline: isDecline ?? self.isDecline)
+              isDecline: isDecline?.description ?? self.isDecline)
     }
 
     public func add(transactionId: String) -> Self {
