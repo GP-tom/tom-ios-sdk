@@ -12,4 +12,5 @@ public enum DeeplinkError: String, Equatable, CaseIterable, Codable, Sendable {
     case merchantInfoMissing
     case failedTapToPay
     case failedToCloseBatch
+    case unsupportedTransactionOperationOrType
 }
