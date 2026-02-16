@@ -167,7 +167,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         try container.encode(status, forKey: .status)
     }
 
-    func changeStatus(status: DccResulStatus) -> Self {
+    public func changeStatus(status: DccResulStatus) -> Self {
         .init(currencyCode: currencyCode,
               amount: amount,
               markUpRate: markUpRate,
