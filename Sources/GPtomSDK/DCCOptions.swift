@@ -1,5 +1,14 @@
 import Foundation
 
+public enum DccResulStatus: String, Codable, Sendable {
+    // User accepted to convert currency
+    case accepted = "ACCEPTED"
+    // user declined conversion
+    case notAccepted = "NOT_ACCEPTED"
+    // DCC failed for any reason
+    case notProcessed = "NOT_PROCESSED"
+}
+
 public struct DCCOptions: Codable, Equatable, Sendable {
     public let amount: String
     public let currencyCode: String
@@ -34,8 +43,11 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public let currencyCode: Currency
     public let amount: Amount
 
-    // 3.20
+    // - Examples: "320"
     public let markUpRate: String
+
+    // - Examples: "3.20"
+    public let markUpRatePercentage: String
 
     /// A code indicating the card region and scheme (network) classification.
     ///
@@ -55,12 +67,15 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     /// - Example: `26.7471`.
     public let exchangeRate: String
 
+    public let status: DccResulStatus?
+
     private enum CodingKeys: String, CodingKey {
         case currencyCode
         case amount
         case markUpRate
         case regionSchemaIndicator
         case exchangeRate
+        case status
     }
 
     public init(original: DCCOptions) throws {
@@ -92,7 +107,8 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.amount = amountValue / 100
 
-        self.markUpRate = DCCOptionsWrapper.parseMarkup(original.markUpRate)
+        self.markUpRate = original.markUpRate
+        self.markUpRatePercentage = DCCOptionsWrapper.parseMarkup(original.markUpRate)
 
         guard let regionSchemaIndicator = Int(original.regionSchemaIndicator) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.regionSchemaIndicator],
@@ -102,6 +118,26 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.regionSchemaIndicator = regionSchemaIndicator
 
         self.exchangeRate = original.effectiveRate.description
+        self.original = original
+
+        self.status = nil
+    }
+
+    public init(currencyCode: Currency,
+                amount: Decimal,
+                markUpRate: String,
+                regionSchemaIndicator: Int,
+                exchangeRate: String,
+                status: DccResulStatus?,
+                original: DCCOptions? = nil)
+    {
+        self.currencyCode = currencyCode
+        self.amount = amount
+        self.markUpRate = markUpRate
+        self.markUpRatePercentage = DCCOptionsWrapper.parseMarkup(markUpRate)
+        self.regionSchemaIndicator = regionSchemaIndicator
+        self.exchangeRate = exchangeRate
+        self.status = status
         self.original = original
     }
 
@@ -116,6 +152,9 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
         self.exchangeRate = try container.decode(String.self, forKey: .exchangeRate)
         self.original = nil
+
+        self.markUpRatePercentage = DCCOptionsWrapper.parseMarkup(markUpRate)
+        self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -125,6 +164,17 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         try container.encode(markUpRate, forKey: .markUpRate)
         try container.encode(regionSchemaIndicator, forKey: .regionSchemaIndicator)
         try container.encode(exchangeRate, forKey: .exchangeRate)
+        try container.encode(status, forKey: .status)
+    }
+
+    func changeStatus(status: DccResulStatus) -> Self {
+        .init(currencyCode: currencyCode,
+              amount: amount,
+              markUpRate: markUpRate,
+              regionSchemaIndicator: regionSchemaIndicator,
+              exchangeRate: exchangeRate,
+              status: status,
+              original: original)
     }
 
     /// Parses markup from either basis points (e.g., "320") or percentage (e.g., "3.2").
@@ -164,11 +214,10 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     ///     If `false`, the rate is inverted (source-per-target).
     ///   - fractionDigits: The number of fraction digits to display (default: 4).
     /// - Returns: A string in the format `"1 <source> = X <target>"`.
-    public func formattedComparison(
-        from sourceCurrencyCode: String,
-        assumesTargetPerSource: Bool = false,
-        fractionDigits: Int = 4
-    ) -> String {
+    public func formattedComparison(from sourceCurrencyCode: String,
+                                    assumesTargetPerSource: Bool = false,
+                                    fractionDigits: Int = 4) -> String
+    {
         let rate: Decimal
 
         let exchangeRateDecimal = Decimal(string: exchangeRate) ?? 0
