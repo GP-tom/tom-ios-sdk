@@ -40,11 +40,11 @@ public struct DCCOptions: Codable, Equatable, Sendable {
 public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public let original: DCCOptions?
 
-    public let currencyCode: Currency
+    public let currency: Currency
     public let amount: Amount
 
     // - Examples: "320"
-    public let markUpRate: String
+    public let markup: String
 
     // - Examples: "3.20"
     public let markUpRatePercentage: String
@@ -70,9 +70,9 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public let status: DccResulStatus?
 
     private enum CodingKeys: String, CodingKey {
-        case currencyCode
+        case currency
         case amount
-        case markUpRate
+        case markup
         case regionSchemaIndicator
         case exchangeRate
         case status
@@ -83,7 +83,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         // If it's a 3-letter ISO code, attempt to construct Currency from ISO
         if currency.count == 3, let isoCurrency = Currency.from(code: currency.uppercased()) {
-            self.currencyCode = isoCurrency
+            self.currency = isoCurrency
         } else {
             // Otherwise treat as numeric code possibly left-padded with zeros
             let normalizedNumeric: String
@@ -93,11 +93,11 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
                 normalizedNumeric = currency
             }
             guard let numericCurrency = Currency(rawValue: normalizedNumeric) else {
-                throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.currencyCode],
+                throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.currency],
                                                         debugDescription: "Unsupported currency code: \(currency)"))
             }
 
-            self.currencyCode = numericCurrency
+            self.currency = numericCurrency
         }
 
         guard let amountValue = Decimal(string: original.amount) else {
@@ -107,8 +107,8 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.amount = amountValue / 100
 
-        self.markUpRate = original.markUpRate
-        self.markUpRatePercentage = DCCOptionsWrapper.parseMarkup(original.markUpRate)
+        self.markup = original.markUpRate
+        self.markUpRatePercentage = DCCOptionsWrapper.formatMarkup(original.markUpRate)
 
         guard let regionSchemaIndicator = Int(original.regionSchemaIndicator) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.regionSchemaIndicator],
@@ -123,18 +123,18 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.status = nil
     }
 
-    public init(currencyCode: Currency,
+    public init(currency: Currency,
                 amount: Decimal,
-                markUpRate: String,
+                markup: String,
                 regionSchemaIndicator: Int,
                 exchangeRate: String,
                 status: DccResulStatus?,
                 original: DCCOptions? = nil)
     {
-        self.currencyCode = currencyCode
+        self.currency = currency
         self.amount = amount
-        self.markUpRate = markUpRate
-        self.markUpRatePercentage = DCCOptionsWrapper.parseMarkup(markUpRate)
+        self.markup = markup
+        self.markUpRatePercentage = DCCOptionsWrapper.formatMarkup(markup)
         self.regionSchemaIndicator = regionSchemaIndicator
         self.exchangeRate = exchangeRate
         self.status = status
@@ -144,33 +144,33 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        let currencyCode = try container.decode(String.self, forKey: .currencyCode)
-        self.currencyCode = Currency.from(code: currencyCode) ?? .EUR
+        let currency = try container.decode(String.self, forKey: .currency)
+        self.currency = Currency.from(code: currency) ?? .EUR
 
         self.amount = try container.decode(Decimal.self, forKey: .amount)
-        self.markUpRate = try container.decode(String.self, forKey: .markUpRate)
+        self.markup = try container.decode(String.self, forKey: .markup)
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
         self.exchangeRate = try container.decode(String.self, forKey: .exchangeRate)
         self.original = nil
 
-        self.markUpRatePercentage = DCCOptionsWrapper.parseMarkup(markUpRate)
+        self.markUpRatePercentage = DCCOptionsWrapper.formatMarkup(markup)
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
     }
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(currencyCode.isoCode, forKey: .currencyCode)
+        try container.encode(currency.isoCode, forKey: .currency)
         try container.encode(amount, forKey: .amount)
-        try container.encode(markUpRate, forKey: .markUpRate)
+        try container.encode(markup, forKey: .markup)
         try container.encode(regionSchemaIndicator, forKey: .regionSchemaIndicator)
         try container.encode(exchangeRate, forKey: .exchangeRate)
         try container.encode(status, forKey: .status)
     }
 
     public func changeStatus(status: DccResulStatus) -> Self {
-        .init(currencyCode: currencyCode,
+        .init(currency: currency,
               amount: amount,
-              markUpRate: markUpRate,
+              markup: markup,
               regionSchemaIndicator: regionSchemaIndicator,
               exchangeRate: exchangeRate,
               status: status,
@@ -179,7 +179,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
     /// Parses markup from either basis points (e.g., "320") or percentage (e.g., "3.2").
     /// Returns a String representing the percentage value formatted with two decimal places (e.g., "3.20").
-    private static func parseMarkup(_ raw: String) -> String {
+    private static func formatMarkup(_ raw: String) -> String {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         // Determine numeric value first (in percent units)
         let percentValue: Decimal
@@ -203,7 +203,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         formatter.numberStyle = .decimal
         // Ensure decimal separator is a dot regardless of device locale
         formatter.decimalSeparator = "."
-        return formatter.string(from: ns) ?? ns.stringValue
+        return "\(formatter.string(from: ns) ?? ns.stringValue)%"
     }
 
     /// Returns a human-readable comparison string using `exchangeRateDecimal`, e.g. `"1 CZK = 0.0419 EUR"`.
@@ -225,7 +225,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         if assumesTargetPerSource {
             rate = exchangeRateDecimal
         } else {
-            if exchangeRateDecimal == 0 { return "1 \(sourceCurrencyCode) = 0 \(currencyCode.rawValue)" }
+            if exchangeRateDecimal == 0 { return "1 \(sourceCurrencyCode) = 0 \(currency.isoCode)" }
             rate = 1 / exchangeRateDecimal
         }
 
@@ -236,6 +236,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         formatter.minimumIntegerDigits = 1
         formatter.numberStyle = .decimal
         let rateString = formatter.string(from: ns) ?? ns.stringValue
-        return "1 \(sourceCurrencyCode) = \(rateString) \(currencyCode.rawValue)"
+        return "1 \(sourceCurrencyCode) = \(rateString) \(currency.isoCode)"
     }
 }
