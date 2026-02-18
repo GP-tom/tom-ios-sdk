@@ -1,10 +1,3 @@
-//
-//  DeeplinkError.swift
-//  GPtomSDK
-//
-//  Created by Jan Švec on 30.10.2025.
-//
-
 public enum DeeplinkError: String, Equatable, CaseIterable, Codable, Sendable {
     case failed
     case networkError
@@ -13,4 +6,15 @@ public enum DeeplinkError: String, Equatable, CaseIterable, Codable, Sendable {
     case failedTapToPay
     case failedToCloseBatch
     case unsupportedTransactionOperationOrType
+
+    /// Login
+    case invalidCredentials
+    case tidNotAssignedToThisUser
+    case tidAlreadyOccupied
+    case anotherTidUsedOnThisDevice
+    case passwordChangeRequired
+    case passwordPendingConfirmation
+    case invalidCode
+    case invalidUserName
+    case terminalSetupFailed
 }
