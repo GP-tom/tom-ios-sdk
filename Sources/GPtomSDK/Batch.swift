@@ -55,13 +55,13 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
 
     public let voidCount: Double?
 
-    public let tipAmount: Amount?
+    public let tipAmount: Amount
 
-    public let tipCount: Int?
+    public let tipCount: Int
 
-    public let tipAverage: Amount?
+    public let tipAverage: Amount
 
-    public let tipAveragePercentage: Double?
+    public let tipAveragePercentage: Double
 
     public var id: String {
         amsId
@@ -107,10 +107,10 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
         self.totalCount = totalCount
         self.voidAmount = voidAmount
         self.voidCount = voidCount
-        self.tipAmount = tipAmount
-        self.tipCount = tipCount
-        self.tipAverage = tipAverage
-        self.tipAveragePercentage = tipAveragePercentage
+        self.tipAmount = tipAmount ?? 0
+        self.tipCount = tipCount ?? 0
+        self.tipAverage = tipAverage ?? 0
+        self.tipAveragePercentage = tipAveragePercentage ?? 0
     }
 
     public init(from decoder: any Decoder) throws {
