@@ -140,10 +140,10 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
         self.totalCount = try container.decodeIfPresent(Double.self, forKey: .totalCount)
         self.voidAmount = try container.decodeIfPresent(Amount.self, forKey: .voidAmount)
         self.voidCount = try container.decodeIfPresent(Double.self, forKey: .voidCount)
-        self.tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount)
-        self.tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount)
-        self.tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage)
-        self.tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage)
+        self.tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount) ?? 0
+        self.tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount) ?? 0
+        self.tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage) ?? 0
+        self.tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage) ?? 0
     }
 
     public func encode(to encoder: any Encoder) throws {
