@@ -112,10 +112,10 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.dccCurrencyExponent = Int(original.dccCurrencyExponent) ?? 2
 
-        let exponent = max(0, self.dccCurrencyExponent)
+        let exponent = max(0, dccCurrencyExponent)
         var divisor: Decimal = 1
         if exponent > 0 {
-            for _ in 0..<exponent {
+            for _ in 0 ..< exponent {
                 divisor *= 10
             }
         }
@@ -176,7 +176,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
-        self.dccCurrencyExponent = try container.decode(Int.self, forKey: .dccCurrencyExponent)
+        self.dccCurrencyExponent = try container.decodeIfPresent(Int.self, forKey: .dccCurrencyExponent) ?? 2
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -187,6 +187,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         try container.encode(regionSchemaIndicator, forKey: .regionSchemaIndicator)
         try container.encode(exchangeRate, forKey: .exchangeRate)
         try container.encode(status, forKey: .status)
+        try container.encode(dccCurrencyExponent, forKey: .dccCurrencyExponent)
     }
 
     public func changeStatus(status: DccResulStatus) -> Self {
