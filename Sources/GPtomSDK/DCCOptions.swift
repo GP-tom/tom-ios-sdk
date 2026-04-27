@@ -43,10 +43,10 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public let currency: Currency
     public let amount: Amount
 
-    // - Examples: "320"
-    public let markup: String
+    // - Examples: 320
+    public let markup: Int
 
-    // - Examples: "3.20"
+    // - Examples: "3.20%"
     public let markUpRatePercentage: String
 
     /// A code indicating the card region and scheme (network) classification.
@@ -65,7 +65,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     /// Refer to your provider's documentation for the exact convention.
     ///
     /// - Example: `26.7471`.
-    public let exchangeRate: String
+    public let exchangeRate: Decimal
 
     public let status: DccResulStatus?
 
@@ -107,8 +107,13 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.amount = amountValue / 100
 
-        self.markup = original.markUpRate
-        self.markUpRatePercentage = DCCOptionsWrapper.formatMarkup(original.markUpRate)
+        guard let markup = DCCOptionsWrapper.parseMarkupBasisPoints(original.markUpRate) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.markup],
+                                                    debugDescription: "Failed parsing markUpRate: \(original.markUpRate)"))
+        }
+
+        self.markup = markup
+        self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
 
         guard let regionSchemaIndicator = Int(original.regionSchemaIndicator) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.regionSchemaIndicator],
@@ -117,7 +122,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.regionSchemaIndicator = regionSchemaIndicator
 
-        self.exchangeRate = original.effectiveRate.description
+        self.exchangeRate = original.effectiveRate
         self.original = original
 
         self.status = nil
@@ -125,16 +130,16 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
     public init(currency: Currency,
                 amount: Decimal,
-                markup: String,
+                markup: Int,
                 regionSchemaIndicator: Int,
-                exchangeRate: String,
+                exchangeRate: Decimal,
                 status: DccResulStatus?,
                 original: DCCOptions? = nil)
     {
         self.currency = currency
         self.amount = amount
         self.markup = markup
-        self.markUpRatePercentage = DCCOptionsWrapper.formatMarkup(markup)
+        self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.regionSchemaIndicator = regionSchemaIndicator
         self.exchangeRate = exchangeRate
         self.status = status
@@ -148,12 +153,12 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.currency = Currency.from(code: currency) ?? .EUR
 
         self.amount = try container.decode(Decimal.self, forKey: .amount)
-        self.markup = try container.decode(String.self, forKey: .markup)
+        self.markup = try container.decode(Int.self, forKey: .markup)
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
-        self.exchangeRate = try container.decode(String.self, forKey: .exchangeRate)
+        self.exchangeRate = try container.decode(Decimal.self, forKey: .exchangeRate)
         self.original = nil
 
-        self.markUpRatePercentage = DCCOptionsWrapper.formatMarkup(markup)
+        self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
     }
 
@@ -177,33 +182,37 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
               original: original)
     }
 
-    /// Parses markup from either basis points (e.g., "320") or percentage (e.g., "3.2").
-    /// Returns a String representing the percentage value formatted with two decimal places (e.g., "3.20").
-    private static func formatMarkup(_ raw: String) -> String {
-        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Determine numeric value first (in percent units)
-        let percentValue: Decimal
-        if trimmed.contains(".") || trimmed.contains(",") {
-            // Normalize comma to dot if present and parse directly as percentage
-            let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
-            percentValue = Decimal(string: normalized) ?? 0
-        } else if let bp = Decimal(string: trimmed) { // basis points -> percent
-            percentValue = bp / 100
-        } else {
-            percentValue = 0
-        }
-
-        // Format to two decimal places using a stable POSIX locale
-        let ns = NSDecimalNumber(decimal: percentValue)
+    /// Converts basis points markup into a percentage string (e.g., 320 -> "3.20%").
+    private static func markupToPercentageFunction(_ markup: Int) -> String {
+        let percentValue = Decimal(markup) / 100
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.minimumFractionDigits = 2
         formatter.maximumFractionDigits = 2
         formatter.minimumIntegerDigits = 1
         formatter.numberStyle = .decimal
-        // Ensure decimal separator is a dot regardless of device locale
         formatter.decimalSeparator = "."
-        return "\(formatter.string(from: ns) ?? ns.stringValue)%"
+
+        let number = NSDecimalNumber(decimal: percentValue)
+        return "\(formatter.string(from: number) ?? number.stringValue)%"
+    }
+
+    /// Parses markup from either basis points (e.g., "320") or percentage (e.g., "3.2")
+    /// and returns basis points as Int.
+    private static func parseMarkupBasisPoints(_ raw: String) -> Int? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if !trimmed.contains("."), !trimmed.contains(",") {
+            return Int(trimmed)
+        }
+
+        let normalized = trimmed.replacingOccurrences(of: ",", with: ".")
+        guard let percent = Decimal(string: normalized) else { return nil }
+
+        var basisPoints = percent * 100
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &basisPoints, 0, .plain)
+        return NSDecimalNumber(decimal: rounded).intValue
     }
 
     /// Returns a human-readable comparison string using `exchangeRateDecimal`, e.g. `"1 CZK = 0.0419 EUR"`.
@@ -220,13 +229,11 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     {
         let rate: Decimal
 
-        let exchangeRateDecimal = Decimal(string: exchangeRate) ?? 0
-
         if assumesTargetPerSource {
-            rate = exchangeRateDecimal
+            rate = exchangeRate
         } else {
-            if exchangeRateDecimal == 0 { return "1 \(sourceCurrencyCode) = 0 \(currency.isoCode)" }
-            rate = 1 / exchangeRateDecimal
+            if exchangeRate == 0 { return "1 \(sourceCurrencyCode) = 0 \(currency.isoCode)" }
+            rate = 1 / exchangeRate
         }
 
         let ns = NSDecimalNumber(decimal: rate)
