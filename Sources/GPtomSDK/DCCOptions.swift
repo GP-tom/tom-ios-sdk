@@ -110,7 +110,16 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
                                                     debugDescription: "Failed parsing amount: \(original.amount)"))
         }
 
-        self.amount = amountValue / 100
+        self.dccCurrencyExponent = Int(original.dccCurrencyExponent) ?? 2
+
+        let exponent = max(0, self.dccCurrencyExponent)
+        var divisor: Decimal = 1
+        if exponent > 0 {
+            for _ in 0..<exponent {
+                divisor *= 10
+            }
+        }
+        self.amount = amountValue / divisor
 
         guard let markup = DCCOptionsWrapper.parseMarkupBasisPoints(original.markUpRate) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.markup],
@@ -131,7 +140,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.original = original
 
         self.status = nil
-        self.dccCurrencyExponent = Int(original.dccCurrencyExponent) ?? 2
     }
 
     public init(currency: Currency,
