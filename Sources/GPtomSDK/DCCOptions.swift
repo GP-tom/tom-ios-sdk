@@ -17,6 +17,7 @@ public struct DCCOptions: Codable, Equatable, Sendable {
     public let regionSchemaIndicator: String
     public let txnId: String?
     public let isDecline: String?
+    public let dccCurrencyExponent: String
 
     func copy(txnId: String? = nil, isDecline: Bool? = nil) -> Self {
         .init(amount: amount,
@@ -25,7 +26,8 @@ public struct DCCOptions: Codable, Equatable, Sendable {
               markUpRate: markUpRate,
               regionSchemaIndicator: regionSchemaIndicator,
               txnId: txnId ?? self.txnId,
-              isDecline: isDecline?.description ?? self.isDecline)
+              isDecline: isDecline?.description ?? self.isDecline,
+              dccCurrencyExponent: dccCurrencyExponent)
     }
 
     public func add(transactionId: String) -> Self {
@@ -69,6 +71,8 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
     public let status: DccResulStatus?
 
+    public let dccCurrencyExponent: Int
+
     private enum CodingKeys: String, CodingKey {
         case currency
         case amount
@@ -76,6 +80,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         case regionSchemaIndicator
         case exchangeRate
         case status
+        case dccCurrencyExponent
     }
 
     public init(original: DCCOptions) throws {
@@ -126,6 +131,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.original = original
 
         self.status = nil
+        self.dccCurrencyExponent = Int(original.dccCurrencyExponent) ?? 2
     }
 
     public init(currency: Currency,
@@ -134,7 +140,8 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
                 regionSchemaIndicator: Int,
                 exchangeRate: Decimal,
                 status: DccResulStatus?,
-                original: DCCOptions? = nil)
+                original: DCCOptions? = nil,
+                dccCurrencyExponent: Int)
     {
         self.currency = currency
         self.amount = amount
@@ -144,6 +151,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.exchangeRate = exchangeRate
         self.status = status
         self.original = original
+        self.dccCurrencyExponent = dccCurrencyExponent
     }
 
     public init(from decoder: Decoder) throws {
@@ -160,6 +168,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
+        self.dccCurrencyExponent = try container.decode(Int.self, forKey: .dccCurrencyExponent)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -179,7 +188,8 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
               regionSchemaIndicator: regionSchemaIndicator,
               exchangeRate: exchangeRate,
               status: status,
-              original: original)
+              original: original,
+              dccCurrencyExponent: dccCurrencyExponent)
     }
 
     /// Converts basis points markup into a percentage string (e.g., 320 -> "3.20%").
