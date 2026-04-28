@@ -84,7 +84,6 @@ public enum Deeplink: Sendable {
 
         return items
     }
-
 }
 
 /// gptom://transaction/refund
@@ -145,13 +144,16 @@ public struct CreateTransactionParams: Sendable {
             return nil
         }
 
-        self.amount = Decimal(amount) / 100
+        guard let parsedAmount = Amount.fromInt64(amount) else {
+            return nil
+        }
+        self.amount = parsedAmount
 
         self.requestID = params["requestID"]
         self.clientID = params["clientID"]
         self.referenceNumber = params["originReferenceNum"]
         self.printByPaymentApp = params["printByPaymentApp"].flatMap { Bool($0) }
-        self.tipAmount = params["tipAmount"].flatMap { Decimal(Int64($0) ?? 0) / 100 }
+        self.tipAmount = params["tipAmount"].flatMap { Int64($0) }.flatMap { Amount.fromInt64($0) }
         self.redirectUrl = params["redirectUrl"]
         self.tipCollect = params["tipCollect"].flatMap { Bool($0) }
         self.preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }

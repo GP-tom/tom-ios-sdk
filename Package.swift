@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "GPtomSDK",
-    platforms: [.iOS("15.0")],
+    platforms: [.iOS("16.4")],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -13,13 +13,17 @@ let package = Package(
             targets: ["GPtomSDK"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/mgriebling/BigDecimal.git", from: "3.0.2")
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "GPtomSDK",
-            dependencies: []
+            dependencies: [
+                .product(name: "BigDecimal", package: "BigDecimal")
+            ]
         )
     ]
 )
