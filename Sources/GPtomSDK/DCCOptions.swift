@@ -71,8 +71,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
     public let status: DccResulStatus?
 
-    public let dccCurrencyExponent: Int
-
     private enum CodingKeys: String, CodingKey {
         case currency
         case amount
@@ -80,7 +78,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         case regionSchemaIndicator
         case exchangeRate
         case status
-        case dccCurrencyExponent
     }
 
     public init(original: DCCOptions) throws {
@@ -105,21 +102,12 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
             self.currency = numericCurrency
         }
 
-        guard let amountValue = Decimal(string: original.amount) else {
+        let exponent = max(0, Int(original.dccCurrencyExponent) ?? 2)
+        guard let amountValue = DCCOptionsWrapper.decimalAmount(fromRaw: original.amount, exponent: exponent) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.amount],
-                                                    debugDescription: "Failed parsing amount: \(original.amount)"))
+                                                    debugDescription: "Failed parsing amount: \(original.amount) with exponent: \(exponent)"))
         }
-
-        self.dccCurrencyExponent = Int(original.dccCurrencyExponent) ?? 2
-
-        let exponent = max(0, dccCurrencyExponent)
-        var divisor: Decimal = 1
-        if exponent > 0 {
-            for _ in 0 ..< exponent {
-                divisor *= 10
-            }
-        }
-        self.amount = amountValue / divisor
+        self.amount = amountValue
 
         guard let markup = DCCOptionsWrapper.parseMarkupBasisPoints(original.markUpRate) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.markup],
@@ -148,8 +136,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
                 regionSchemaIndicator: Int,
                 exchangeRate: Decimal,
                 status: DccResulStatus?,
-                original: DCCOptions? = nil,
-                dccCurrencyExponent: Int)
+                original: DCCOptions? = nil)
     {
         self.currency = currency
         self.amount = amount
@@ -159,7 +146,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.exchangeRate = exchangeRate
         self.status = status
         self.original = original
-        self.dccCurrencyExponent = dccCurrencyExponent
     }
 
     public init(from decoder: Decoder) throws {
@@ -176,7 +162,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
         self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
-        self.dccCurrencyExponent = try container.decodeIfPresent(Int.self, forKey: .dccCurrencyExponent) ?? 2
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -187,7 +172,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         try container.encode(regionSchemaIndicator, forKey: .regionSchemaIndicator)
         try container.encode(exchangeRate, forKey: .exchangeRate)
         try container.encode(status, forKey: .status)
-        try container.encode(dccCurrencyExponent, forKey: .dccCurrencyExponent)
     }
 
     public func changeStatus(status: DccResulStatus) -> Self {
@@ -197,8 +181,45 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
               regionSchemaIndicator: regionSchemaIndicator,
               exchangeRate: exchangeRate,
               status: status,
-              original: original,
-              dccCurrencyExponent: dccCurrencyExponent)
+              original: original)
+    }
+
+    private static func decimalAmount(fromRaw rawAmount: String, exponent: Int) -> Decimal? {
+        let trimmed = rawAmount.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let sign: String
+        let digitsPortion: Substring
+        if let first = trimmed.first, first == "-" || first == "+" {
+            sign = String(first)
+            digitsPortion = trimmed.dropFirst()
+        } else {
+            sign = ""
+            digitsPortion = Substring(trimmed)
+        }
+
+        guard !digitsPortion.isEmpty,
+              digitsPortion.unicodeScalars.allSatisfy({ CharacterSet.decimalDigits.contains($0) })
+        else {
+            return nil
+        }
+
+        let digits = String(digitsPortion)
+        let normalized: String
+
+        if exponent == 0 {
+            normalized = sign + digits
+        } else if digits.count <= exponent {
+            let zeros = String(repeating: "0", count: exponent - digits.count)
+            normalized = "\(sign)0.\(zeros)\(digits)"
+        } else {
+            let integerEnd = digits.index(digits.endIndex, offsetBy: -exponent)
+            let integerPart = digits[..<integerEnd]
+            let fractionPart = digits[integerEnd...]
+            normalized = "\(sign)\(integerPart).\(fractionPart)"
+        }
+
+        return Decimal(string: normalized)
     }
 
     /// Converts basis points markup into a percentage string (e.g., 320 -> "3.20%").
