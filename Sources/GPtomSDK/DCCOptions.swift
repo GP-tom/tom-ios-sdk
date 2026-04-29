@@ -131,7 +131,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     }
 
     public init(currency: Currency,
-                amount: Amount,
+                amount: Decimal,
                 markup: Int,
                 regionSchemaIndicator: Int,
                 exchangeRate: Decimal,
@@ -154,7 +154,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         let currency = try container.decode(String.self, forKey: .currency)
         self.currency = Currency.from(code: currency) ?? .EUR
 
-        self.amount = try container.decode(Amount.self, forKey: .amount)
+        self.amount = try container.decode(Decimal.self, forKey: .amount)
         self.markup = try container.decode(Int.self, forKey: .markup)
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
         self.exchangeRate = try container.decode(Decimal.self, forKey: .exchangeRate)
@@ -184,7 +184,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
               original: original)
     }
 
-    private static func decimalAmount(fromRaw rawAmount: String, exponent: Int) -> Amount? {
+    private static func decimalAmount(fromRaw rawAmount: String, exponent: Int) -> Decimal? {
         let trimmed = rawAmount.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
@@ -219,7 +219,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
             normalized = "\(sign)\(integerPart).\(fractionPart)"
         }
 
-        return normalized.amount
+        return Decimal(string: normalized)
     }
 
     /// Converts basis points markup into a percentage string (e.g., 320 -> "3.20%").
