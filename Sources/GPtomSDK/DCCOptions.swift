@@ -154,7 +154,13 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         let currency = try container.decode(String.self, forKey: .currency)
         self.currency = Currency.from(code: currency) ?? .EUR
 
-        self.amount = try container.decode(Decimal.self, forKey: .amount)
+        if let amountString = try? container.decode(String.self, forKey: .amount),
+           let decodedAmount = Decimal(string: amountString)
+        {
+            self.amount = decodedAmount
+        } else {
+            self.amount = try container.decode(Decimal.self, forKey: .amount)
+        }
         self.markup = try container.decode(Int.self, forKey: .markup)
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
         self.exchangeRate = try container.decode(Decimal.self, forKey: .exchangeRate)
@@ -167,7 +173,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(currency.isoCode, forKey: .currency)
-        try container.encode(amount, forKey: .amount)
+        try container.encode(NSDecimalNumber(decimal: amount).stringValue, forKey: .amount)
         try container.encode(markup, forKey: .markup)
         try container.encode(regionSchemaIndicator, forKey: .regionSchemaIndicator)
         try container.encode(exchangeRate, forKey: .exchangeRate)
