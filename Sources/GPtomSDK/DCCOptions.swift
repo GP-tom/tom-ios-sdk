@@ -261,34 +261,23 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         return NSDecimalNumber(decimal: rounded).intValue
     }
 
-    /// Returns a human-readable comparison string using `exchangeRateDecimal`, e.g. `"1 CZK = 0.0419 EUR"`.
+    /// Returns a human-readable comparison string using `exchangeRate`,
+    /// e.g. `"1 EUR = 26.7471 CZK"` for a CZK terminal and EUR card.
     ///
     /// - Parameters:
-    ///   - sourceCurrencyCode: The alphabetic code of the source currency (e.g., "CZK").
-    ///   - assumesTargetPerSource: If `true`, `exchangeRateDecimal` is interpreted as target-per-source.
-    ///     If `false`, the rate is inverted (source-per-target).
+    ///   - sourceCurrencyCode: The alphabetic code of the terminal currency (e.g., "CZK").
     ///   - fractionDigits: The number of fraction digits to display (default: 4).
-    /// - Returns: A string in the format `"1 <source> = X <target>"`.
+    /// - Returns: A string in the format `"1 <dccCurrency> = X <terminalCurrency>"`.
     public func formattedComparison(from sourceCurrencyCode: String,
-                                    assumesTargetPerSource: Bool = false,
                                     fractionDigits: Int = 4) -> String
     {
-        let rate: Decimal
-
-        if assumesTargetPerSource {
-            rate = exchangeRate
-        } else {
-            if exchangeRate == 0 { return "1 \(sourceCurrencyCode) = 0 \(currency.isoCode)" }
-            rate = 1 / exchangeRate
-        }
-
-        let ns = NSDecimalNumber(decimal: rate)
+        let ns = NSDecimalNumber(decimal: exchangeRate)
         let formatter = NumberFormatter()
         formatter.minimumFractionDigits = fractionDigits
         formatter.maximumFractionDigits = fractionDigits
         formatter.minimumIntegerDigits = 1
         formatter.numberStyle = .decimal
         let rateString = formatter.string(from: ns) ?? ns.stringValue
-        return "1 \(sourceCurrencyCode) = \(rateString) \(currency.isoCode)"
+        return "1 \(currency.isoCode) = \(rateString) \(sourceCurrencyCode)"
     }
 }
