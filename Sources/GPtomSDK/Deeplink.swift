@@ -163,7 +163,7 @@ public struct CreateTransactionParams: Sendable {
 }
 
 /// gptom://transaction/cancel
-public struct CancelTransactionParams: Sendable {
+public struct CancelTransactionParams: Equatable, Sendable {
     /// optional id that can be used to access transaction detail instead of amsId.
     /// can only be used locally on the device that created the transaction
     public let requestID: String?
