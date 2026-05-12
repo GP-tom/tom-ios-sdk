@@ -8,6 +8,7 @@ public enum DeeplinkError: String, Equatable, CaseIterable, Codable, Sendable {
     case unsupportedTransactionOperationOrType
     case invalidAmount
     case cannotBeVoided
+    case userNotLoggedIn
 
     /// Login
     case invalidCredentials
