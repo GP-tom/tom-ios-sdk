@@ -18,5 +18,6 @@ public enum CardType: String, Equatable, CaseIterable, Codable, Sendable {
     case unionPay = "UNIONPAY"
     case ruPay = "RUPAY"
     case pure = "PURE"
+    case girocard = "GIROCARD"
     case unknown = "UNKNOWN"
 }
