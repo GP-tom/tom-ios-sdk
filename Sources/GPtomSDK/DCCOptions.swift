@@ -267,12 +267,15 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     /// - Parameters:
     ///   - sourceCurrencyCode: The alphabetic code of the terminal currency (e.g., "CZK").
     ///   - fractionDigits: The number of fraction digits to display (default: 4).
+    ///   - locale: Optional locale override used for rate number formatting.
     /// - Returns: A string in the format `"1 <dccCurrency> = X <terminalCurrency>"`.
     public func formattedComparison(from sourceCurrencyCode: String,
-                                    fractionDigits: Int = 4) -> String
+                                    fractionDigits: Int = 4,
+                                    locale: Locale? = nil) -> String
     {
         let ns = NSDecimalNumber(decimal: exchangeRate)
         let formatter = NumberFormatter()
+        formatter.locale = locale ?? .current
         formatter.minimumFractionDigits = fractionDigits
         formatter.maximumFractionDigits = fractionDigits
         formatter.minimumIntegerDigits = 1
