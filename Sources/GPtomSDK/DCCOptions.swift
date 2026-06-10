@@ -233,7 +233,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         let percentValue = Decimal(markup) / 100
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.minimumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
         formatter.maximumFractionDigits = 2
         formatter.minimumIntegerDigits = 1
         formatter.numberStyle = .decimal
