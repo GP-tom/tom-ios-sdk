@@ -46,7 +46,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public let amount: Amount
 
     // - Examples: 3.2, 4.56...
-    public let markup: Amount
+    public let markup: String
 
     /// A code indicating the card region and scheme (network) classification.
     ///
@@ -111,7 +111,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
                                                     debugDescription: "Failed parsing markUpRate: \(original.markUpRate)"))
         }
 
-        self.markup = Decimal(string: DCCOptionsWrapper.markupToPercentageFunction(markup)) ?? 0
+        self.markup = DCCOptionsWrapper.markupToPercentageFunction(markup)
 
         guard let regionSchemaIndicator = Int(original.regionSchemaIndicator) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.regionSchemaIndicator],
@@ -128,7 +128,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
     public init(currency: Currency,
                 amount: Decimal,
-                markup: Decimal,
+                markup: String,
                 regionSchemaIndicator: Int,
                 exchangeRate: Decimal,
                 status: DccResulStatus?,
@@ -149,11 +149,22 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         let currency = try container.decode(String.self, forKey: .currency)
         self.currency = Currency.from(code: currency) ?? .EUR
 
-        self.amount = try container.decode(Amount.self, forKey: .amount)
-        self.markup = try container.decode(Amount.self, forKey: .markup)
+        if let amountString = try? container.decode(String.self, forKey: .amount),
+           let decodedAmount = Decimal(string: amountString)
+        {
+            self.amount = decodedAmount
+        } else {
+            self.amount = try container.decode(Decimal.self, forKey: .amount)
+        }
+
+        if let markup = try? container.decodeIfPresent(String.self, forKey: .markup) {
+            self.markup = markup
+        } else {
+            self.markup = (try? container.decodeIfPresent(Decimal.self, forKey: .markup))?.string ?? "-"
+        }
 
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
-        self.exchangeRate = try container.decode(Amount.self, forKey: .exchangeRate)
+        self.exchangeRate = try container.decode(Decimal.self, forKey: .exchangeRate)
         self.original = nil
 
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
@@ -162,7 +173,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(currency.isoCode, forKey: .currency)
-        try container.encode(amount, forKey: .amount)
+        try container.encode(NSDecimalNumber(decimal: amount).stringValue, forKey: .amount)
         try container.encode(markup, forKey: .markup)
         try container.encode(regionSchemaIndicator, forKey: .regionSchemaIndicator)
         try container.encode(exchangeRate, forKey: .exchangeRate)
