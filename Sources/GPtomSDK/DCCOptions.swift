@@ -157,7 +157,12 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
             self.amount = try container.decode(Decimal.self, forKey: .amount)
         }
 
-        self.markup = try container.decode(String.self, forKey: .markup)
+        if let markup = try? container.decodeIfPresent(String.self, forKey: .markup) {
+            self.markup = markup
+        } else {
+            self.markup = (try? container.decodeIfPresent(Decimal.self, forKey: .markup))?.string ?? "-"
+        }
+
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
         self.exchangeRate = try container.decode(Decimal.self, forKey: .exchangeRate)
         self.original = nil
