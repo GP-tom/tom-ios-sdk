@@ -45,11 +45,8 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
     public let currency: Currency
     public let amount: Amount
 
-    // - Examples: 320
-    public let markup: Int
-
-    // - Examples: "3.20%"
-    public let markUpRatePercentage: String
+    // - Examples: 3.2, 4.56...
+    public let markup: String
 
     /// A code indicating the card region and scheme (network) classification.
     ///
@@ -114,8 +111,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
                                                     debugDescription: "Failed parsing markUpRate: \(original.markUpRate)"))
         }
 
-        self.markup = markup
-        self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
+        self.markup = DCCOptionsWrapper.markupToPercentageFunction(markup)
 
         guard let regionSchemaIndicator = Int(original.regionSchemaIndicator) else {
             throw DecodingError.dataCorrupted(.init(codingPath: [CodingKeys.regionSchemaIndicator],
@@ -132,7 +128,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
 
     public init(currency: Currency,
                 amount: Decimal,
-                markup: Int,
+                markup: String,
                 regionSchemaIndicator: Int,
                 exchangeRate: Decimal,
                 status: DccResulStatus?,
@@ -141,7 +137,6 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         self.currency = currency
         self.amount = amount
         self.markup = markup
-        self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.regionSchemaIndicator = regionSchemaIndicator
         self.exchangeRate = exchangeRate
         self.status = status
@@ -161,12 +156,12 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         } else {
             self.amount = try container.decode(Decimal.self, forKey: .amount)
         }
-        self.markup = try container.decode(Int.self, forKey: .markup)
+
+        self.markup = try container.decode(String.self, forKey: .markup)
         self.regionSchemaIndicator = try container.decode(Int.self, forKey: .regionSchemaIndicator)
         self.exchangeRate = try container.decode(Decimal.self, forKey: .exchangeRate)
         self.original = nil
 
-        self.markUpRatePercentage = DCCOptionsWrapper.markupToPercentageFunction(markup)
         self.status = try container.decodeIfPresent(DccResulStatus.self, forKey: .status)
     }
 
@@ -240,7 +235,7 @@ public struct DCCOptionsWrapper: Codable, Equatable, Sendable {
         formatter.decimalSeparator = "."
 
         let number = NSDecimalNumber(decimal: percentValue)
-        return "\(formatter.string(from: number) ?? number.stringValue)%"
+        return formatter.string(from: number) ?? number.stringValue
     }
 
     /// Parses markup from either basis points (e.g., "320") or percentage (e.g., "3.2")
