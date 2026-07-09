@@ -19,6 +19,25 @@ public struct DCCOptions: Codable, Equatable, Sendable {
     public let isDecline: String?
     public let dccCurrencyExponent: String
 
+    public init(amount: String,
+                currencyCode: String,
+                effectiveRate: Decimal,
+                markUpRate: String,
+                regionSchemaIndicator: String,
+                txnId: String?,
+                isDecline: String?,
+                dccCurrencyExponent: String)
+    {
+        self.amount = amount
+        self.currencyCode = currencyCode
+        self.effectiveRate = effectiveRate
+        self.markUpRate = markUpRate
+        self.regionSchemaIndicator = regionSchemaIndicator
+        self.txnId = txnId
+        self.isDecline = isDecline
+        self.dccCurrencyExponent = dccCurrencyExponent
+    }
+
     func copy(txnId: String? = nil, isDecline: Bool? = nil) -> Self {
         .init(amount: amount,
               currencyCode: currencyCode,
