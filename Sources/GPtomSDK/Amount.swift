@@ -22,6 +22,7 @@ public extension Amount {
 public extension String {
     var amount: Amount? {
         let sanitized = replacingOccurrences(of: ",", with: ".")
+            .filter { !$0.isWhitespace }
         return Decimal(string: sanitized)
     }
 }
