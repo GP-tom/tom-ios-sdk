@@ -8,6 +8,8 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
         case currency
         case date
         case firstTransactionDate
+        case installmentCount
+        case installmentAmount
         case invalidCount
         case previousBatchDate
         case saleAmount
@@ -36,6 +38,10 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
     public var date: Date?
 
     public var firstTransactionDate: Date?
+
+    public let installmentCount: Int?
+
+    public let installmentAmount: Amount?
 
     public let invalidCount: Double?
 
@@ -78,6 +84,8 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
         currency: String? = nil,
         date: Date? = nil,
         firstTransactionDate: Date? = nil,
+        installmentCount: Int? = nil,
+        installmentAmount: Amount? = nil,
         invalidCount: Double? = nil,
         previousBatchDate: Date? = nil,
         saleAmount: Amount? = nil,
@@ -98,6 +106,8 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
         self.currency = currency
         self.date = date
         self.firstTransactionDate = firstTransactionDate
+        self.installmentCount = installmentCount
+        self.installmentAmount = installmentAmount
         self.invalidCount = invalidCount
         self.previousBatchDate = previousBatchDate
         self.saleAmount = saleAmount
@@ -115,35 +125,38 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.amsId = try container.decode(String.self, forKey: .amsId)
-        self.batchNumber = try container.decodeIfPresent(String.self, forKey: .batchNumber)
-        self.communicationId = try container.decodeIfPresent(String.self, forKey: .communicationId)
-        self.currency = try container.decodeIfPresent(String.self, forKey: .currency)
+        amsId = try container.decode(String.self, forKey: .amsId)
+        batchNumber = try container.decodeIfPresent(String.self, forKey: .batchNumber)
+        communicationId = try container.decodeIfPresent(String.self, forKey: .communicationId)
+        currency = try container.decodeIfPresent(String.self, forKey: .currency)
 
         if let date = try container.decodeIfPresent(String.self, forKey: .date) {
             self.date = ISO.iso8601DateFormatter.date(from: date)
         }
 
         if let date = try container.decodeIfPresent(String.self, forKey: .firstTransactionDate) {
-            self.firstTransactionDate = ISO.iso8601DateFormatter.date(from: date)
+            firstTransactionDate = ISO.iso8601DateFormatter.date(from: date)
         }
 
         if let date = try container.decodeIfPresent(String.self, forKey: .previousBatchDate) {
-            self.previousBatchDate = ISO.iso8601DateFormatter.date(from: date)
+            previousBatchDate = ISO.iso8601DateFormatter.date(from: date)
         }
 
-        self.invalidCount = try container.decodeIfPresent(Double.self, forKey: .invalidCount)
-        self.saleAmount = try container.decodeIfPresent(Amount.self, forKey: .saleAmount)
-        self.saleCount = try container.decodeIfPresent(Double.self, forKey: .saleCount)
-        self.subBatches = try container.decodeIfPresent(SubBatches.self, forKey: .subBatches)
-        self.totalAmount = try container.decodeIfPresent(Amount.self, forKey: .totalAmount)
-        self.totalCount = try container.decodeIfPresent(Double.self, forKey: .totalCount)
-        self.voidAmount = try container.decodeIfPresent(Amount.self, forKey: .voidAmount)
-        self.voidCount = try container.decodeIfPresent(Double.self, forKey: .voidCount)
-        self.tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount) ?? 0
-        self.tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount) ?? 0
-        self.tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage) ?? 0
-        self.tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage) ?? 0
+        installmentCount = try container.decodeIfPresent(Int.self, forKey: .installmentCount)
+        installmentAmount = try container.decodeIfPresent(Amount.self, forKey: .installmentAmount)
+
+        invalidCount = try container.decodeIfPresent(Double.self, forKey: .invalidCount)
+        saleAmount = try container.decodeIfPresent(Amount.self, forKey: .saleAmount)
+        saleCount = try container.decodeIfPresent(Double.self, forKey: .saleCount)
+        subBatches = try container.decodeIfPresent(SubBatches.self, forKey: .subBatches)
+        totalAmount = try container.decodeIfPresent(Amount.self, forKey: .totalAmount)
+        totalCount = try container.decodeIfPresent(Double.self, forKey: .totalCount)
+        voidAmount = try container.decodeIfPresent(Amount.self, forKey: .voidAmount)
+        voidCount = try container.decodeIfPresent(Double.self, forKey: .voidCount)
+        tipAmount = try container.decodeIfPresent(Amount.self, forKey: .tipAmount) ?? 0
+        tipCount = try container.decodeIfPresent(Int.self, forKey: .tipCount) ?? 0
+        tipAverage = try container.decodeIfPresent(Amount.self, forKey: .tipAverage) ?? 0
+        tipAveragePercentage = try container.decodeIfPresent(Double.self, forKey: .tipAveragePercentage) ?? 0
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -158,6 +171,9 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
 
         let firstTransactionDate = firstTransactionDate.flatMap { ISO.iso8601DateFormatter.string(from: $0) }
         try container.encodeIfPresent(firstTransactionDate, forKey: .firstTransactionDate)
+
+        try container.encodeIfPresent(installmentCount, forKey: .installmentCount)
+        try container.encodeIfPresent(installmentAmount, forKey: .installmentAmount)
 
         try container.encodeIfPresent(invalidCount, forKey: .invalidCount)
 
@@ -176,5 +192,4 @@ public struct Batch: Codable, Equatable, Sendable, Identifiable {
         try container.encodeIfPresent(tipAverage, forKey: .tipAverage)
         try container.encodeIfPresent(tipAveragePercentage, forKey: .tipAveragePercentage)
     }
-
 }

@@ -1,6 +1,17 @@
 import Foundation
 
 public struct SubBatch: Codable, Equatable, Sendable {
+    public struct Installment: Codable, Equatable, Sendable {
+        public let count: Int
+        public let amount: Amount
+
+        public init(count: Int, amount: Amount) {
+            self.count = count
+            self.amount = amount
+        }
+    }
+
+    public let installment: Installment?
     public let closeBatchNumber: String?
     public let saleAmount: Amount?
     public let saleCount: Double?
@@ -15,8 +26,10 @@ public struct SubBatch: Codable, Equatable, Sendable {
                 totalAmount: Amount? = nil,
                 totalCount: Double? = nil,
                 voidAmount: Amount? = nil,
-                voidCount: Double? = nil)
+                voidCount: Double? = nil,
+                installment: Installment? = nil)
     {
+        self.installment = installment
         self.closeBatchNumber = closeBatchNumber
         self.saleAmount = saleAmount
         self.saleCount = saleCount
