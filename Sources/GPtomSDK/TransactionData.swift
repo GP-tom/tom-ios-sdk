@@ -33,6 +33,7 @@ public struct TransactionData: Codable, Sendable {
     public let blikCode: String? // Code used in BLIK transaction
     public let blikTransactionRef: String?
     public let dccData: DCCOptionsWrapper?
+    public let installmentData: InstallmentData?
 
     public init(batchNumber: String?,
                 receiptNumber: String?,
@@ -58,7 +59,8 @@ public struct TransactionData: Codable, Sendable {
                 authorizationCode: String?,
                 blikCode: String?,
                 blikTransactionRef: String?,
-                dccData: DCCOptionsWrapper?)
+                dccData: DCCOptionsWrapper?,
+                installmentData: InstallmentData? = nil)
     {
         self.batchNumber = batchNumber
         self.receiptNumber = receiptNumber
@@ -85,6 +87,7 @@ public struct TransactionData: Codable, Sendable {
         self.blikCode = blikCode
         self.blikTransactionRef = blikTransactionRef
         self.dccData = dccData
+        self.installmentData = installmentData
     }
 
     public init(from decoder: any Decoder) throws {
@@ -118,6 +121,7 @@ public struct TransactionData: Codable, Sendable {
         self.blikCode = try container.decodeIfPresent(String.self, forKey: .blikCode)
         self.blikTransactionRef = try container.decodeIfPresent(String.self, forKey: .blikTransactionRef)
         self.dccData = try container.decodeIfPresent(DCCOptionsWrapper.self, forKey: .dccData)
+        self.installmentData = try container.decodeIfPresent(InstallmentData.self, forKey: .installmentData)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -150,6 +154,7 @@ public struct TransactionData: Codable, Sendable {
         try container.encodeIfPresent(self.blikCode, forKey: .blikCode)
         try container.encodeIfPresent(self.blikTransactionRef, forKey: .blikTransactionRef)
         try container.encodeIfPresent(self.dccData, forKey: .dccData)
+        try container.encodeIfPresent(self.installmentData, forKey: .installmentData)
     }
 
     enum CodingKeys: CodingKey {
@@ -178,5 +183,6 @@ public struct TransactionData: Codable, Sendable {
         case blikCode
         case blikTransactionRef
         case dccData
+        case installmentData
     }
 }
