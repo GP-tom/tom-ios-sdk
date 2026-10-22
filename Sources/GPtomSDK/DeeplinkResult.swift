@@ -4,6 +4,8 @@ public enum DeeplinkResult: Sendable {
     case createTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
     case refundTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
     case cancelTransaction(TransactionData?, RefusalCode?, TaskStatus, DeeplinkError?)
+    /// The detail requested by `transaction/detail` with a `redirectUrl`, including its fiscalization.
+    case transactionDetail(TransactionData?, TaskStatus, DeeplinkError?)
     case closeBatch(Batch?, TaskStatus, DeeplinkError?)
     case login(TaskStatus, DeeplinkError?)
     case logout(TaskStatus)
@@ -27,6 +29,10 @@ public enum DeeplinkResult: Sendable {
         } else if urlString.contains("transaction/refund") {
             return parseTransactionResult(params: params)
                 .flatMap { .refundTransaction($0, $1, $2, $3) }
+
+        } else if urlString.contains("transaction/detail") {
+            return parseTransactionResult(params: params)
+                .flatMap { .transactionDetail($0, $2, $3) }
 
         } else if urlString.contains("change-password") {
             return parseSimple(params: params).flatMap { .changePassword($0, $1) }
