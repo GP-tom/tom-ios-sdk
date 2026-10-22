@@ -34,6 +34,10 @@ public struct TransactionData: Codable, Sendable {
     public let blikTransactionRef: String?
     public let dccData: DCCOptionsWrapper?
     public let installmentData: InstallmentData?
+    /// Whether the transaction was identified for reporting to the Financial Administration.
+    public let fiscalized: Bool?
+    /// Returned only by the transaction detail result.
+    public let fiscalization: FiscalizationData?
 
     public init(batchNumber: String?,
                 receiptNumber: String?,
@@ -60,7 +64,9 @@ public struct TransactionData: Codable, Sendable {
                 blikCode: String?,
                 blikTransactionRef: String?,
                 dccData: DCCOptionsWrapper?,
-                installmentData: InstallmentData? = nil)
+                installmentData: InstallmentData? = nil,
+                fiscalized: Bool? = nil,
+                fiscalization: FiscalizationData? = nil)
     {
         self.batchNumber = batchNumber
         self.receiptNumber = receiptNumber
@@ -88,6 +94,8 @@ public struct TransactionData: Codable, Sendable {
         self.blikTransactionRef = blikTransactionRef
         self.dccData = dccData
         self.installmentData = installmentData
+        self.fiscalized = fiscalized
+        self.fiscalization = fiscalization
     }
 
     public init(from decoder: any Decoder) throws {
@@ -122,6 +130,8 @@ public struct TransactionData: Codable, Sendable {
         self.blikTransactionRef = try container.decodeIfPresent(String.self, forKey: .blikTransactionRef)
         self.dccData = try container.decodeIfPresent(DCCOptionsWrapper.self, forKey: .dccData)
         self.installmentData = try container.decodeIfPresent(InstallmentData.self, forKey: .installmentData)
+        self.fiscalized = try container.decodeIfPresent(Bool.self, forKey: .fiscalized)
+        self.fiscalization = try container.decodeIfPresent(FiscalizationData.self, forKey: .fiscalization)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -155,6 +165,8 @@ public struct TransactionData: Codable, Sendable {
         try container.encodeIfPresent(self.blikTransactionRef, forKey: .blikTransactionRef)
         try container.encodeIfPresent(self.dccData, forKey: .dccData)
         try container.encodeIfPresent(self.installmentData, forKey: .installmentData)
+        try container.encodeIfPresent(self.fiscalized, forKey: .fiscalized)
+        try container.encodeIfPresent(self.fiscalization, forKey: .fiscalization)
     }
 
     enum CodingKeys: CodingKey {
@@ -184,5 +196,7 @@ public struct TransactionData: Codable, Sendable {
         case blikTransactionRef
         case dccData
         case installmentData
+        case fiscalized
+        case fiscalization
     }
 }
