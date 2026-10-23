@@ -22,7 +22,13 @@ public extension Amount {
 public extension String {
     var amount: Amount? {
         let sanitized = filter { !$0.isWhitespace }
-        return Decimal(string: sanitized, locale: Locale.autoupdatingCurrent)
+
+        let formatter = NumberFormatter()
+        formatter.locale = .autoupdatingCurrent
+        formatter.numberStyle = .decimal
+        formatter.generatesDecimalNumbers = true
+
+        return formatter.number(from: sanitized)?.decimalValue
     }
 }
 
