@@ -32,12 +32,22 @@ public struct FiscalizationData: Codable, Equatable, Sendable {
     public let unitId: Int?
     /// Name of the fiscal unit the transaction was reported under.
     public let unitName: String?
+    /// Amount actually reported to the Financial Administration, formatted like the other amounts.
+    /// It can differ from the transaction amount: cash is rounded and a void is negative.
+    public let registeredAmount: String?
 
-    public init(status: Status?, pok: String?, unitId: Int?, unitName: String?) {
+    public init(
+        status: Status?,
+        pok: String?,
+        unitId: Int?,
+        unitName: String?,
+        registeredAmount: String? = nil
+    ) {
         self.status = status
         self.pok = pok
         self.unitId = unitId
         self.unitName = unitName
+        self.registeredAmount = registeredAmount
     }
 
     public init(from decoder: any Decoder) throws {
@@ -47,5 +57,6 @@ public struct FiscalizationData: Codable, Equatable, Sendable {
         self.pok = try container.decodeIfPresent(String.self, forKey: .pok)
         self.unitId = try container.decodeIfPresent(Int.self, forKey: .unitId)
         self.unitName = try container.decodeIfPresent(String.self, forKey: .unitName)
+        self.registeredAmount = try container.decodeIfPresent(String.self, forKey: .registeredAmount)
     }
 }
