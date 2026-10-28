@@ -20,6 +20,8 @@ public enum Deeplink: Sendable {
             params.clientID
         case let .refundTransaction(params):
             params.clientID
+        case let .transactionDetail(params):
+            params.clientID
         case let .closeBatch(params):
             params.clientID
         default:
@@ -34,6 +36,8 @@ public enum Deeplink: Sendable {
         case let .cancelTransaction(params):
             params.redirectUrl
         case let .refundTransaction(params):
+            params.redirectUrl
+        case let .transactionDetail(params):
             params.redirectUrl
         case let .status(params):
             params.redirectUrl
@@ -109,6 +113,9 @@ public struct CreateTransactionParams: Sendable {
     public let clientPhone: String?
     public let clientEmail: String?
     public let orderId: String?
+    /// Passed to the transaction request unchanged: `true` requests fiscalization, `false` opts out,
+    /// `nil` leaves the decision to the backend. Currently supported only for CZ fiscalization.
+    public let fiscalize: Bool?
 
     public init(
         requestID: String? = nil,
@@ -123,7 +130,8 @@ public struct CreateTransactionParams: Sendable {
         clientPhone: String? = nil,
         clientEmail: String? = nil,
         orderId: String? = nil,
-        transactionType: TransactionType? = nil
+        transactionType: TransactionType? = nil,
+        fiscalize: Bool? = nil
     ) {
         self.requestID = requestID
         self.amount = amount
@@ -138,6 +146,7 @@ public struct CreateTransactionParams: Sendable {
         self.clientPhone = clientPhone
         self.clientEmail = clientEmail
         self.transactionType = transactionType
+        self.fiscalize = fiscalize
     }
 
     init?(params: [String: String]) {
@@ -159,6 +168,7 @@ public struct CreateTransactionParams: Sendable {
         self.clientEmail = params["clientEmail"]
         self.orderId = nil
         self.transactionType = params["transactionType"].flatMap { TransactionType(rawValue: $0) }
+        self.fiscalize = params["fiscalize"].flatMap { Bool($0) }
     }
 }
 
@@ -219,22 +229,36 @@ public struct CancelTransactionParams: Equatable, Sendable {
 }
 
 /// gptom://transaction/detail
+///
+/// Without `redirectUrl` the payment app shows the transaction detail. With it, the payment app returns
+/// the detail, including its fiscalization, to `redirectUrl` as `DeeplinkResult.transactionDetail`.
 public struct TransactionDetailParams: Sendable {
     public let amsID: String?
     public let requestID: String?
+    public let clientID: String?
+    public let redirectUrl: String?
 
     public init?(params: [String: String]) {
         self.amsID = params["amsID"]
         self.requestID = params["requestID"]
+        self.clientID = params["clientID"]
+        self.redirectUrl = params["redirectUrl"]
 
         if amsID == nil, requestID == nil {
             return nil
         }
     }
 
-    public init(amsID: String? = nil, requestID: String? = nil) {
+    public init(
+        amsID: String? = nil,
+        requestID: String? = nil,
+        clientID: String? = nil,
+        redirectUrl: String? = nil
+    ) {
         self.amsID = amsID
         self.requestID = requestID
+        self.clientID = clientID
+        self.redirectUrl = redirectUrl
     }
 }
 
