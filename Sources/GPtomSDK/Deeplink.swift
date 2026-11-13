@@ -186,6 +186,9 @@ public struct CancelTransactionParams: Equatable, Sendable {
     public let preferableReceiptType: ReceiptOption?
     public let clientPhone: String?
     public let clientEmail: String?
+    /// Passed to the void request unchanged: `true` requests fiscalization, `false` opts out,
+    /// `nil` leaves the decision to the backend. Currently supported only for CZ fiscalization.
+    public let fiscalize: Bool?
 
     public init(
         requestID: String? = nil,
@@ -196,7 +199,8 @@ public struct CancelTransactionParams: Equatable, Sendable {
         preferableReceiptType: ReceiptOption? = nil,
         clientPhone: String? = nil,
         clientEmail: String? = nil,
-        orderId: String? = nil
+        orderId: String? = nil,
+        fiscalize: Bool? = nil
     ) {
         self.requestID = requestID
         self.clientID = clientID
@@ -206,6 +210,7 @@ public struct CancelTransactionParams: Equatable, Sendable {
         self.preferableReceiptType = preferableReceiptType
         self.clientPhone = clientPhone
         self.clientEmail = clientEmail
+        self.fiscalize = fiscalize
     }
 
     init?(params: [String: String]) {
@@ -225,6 +230,7 @@ public struct CancelTransactionParams: Equatable, Sendable {
         self.preferableReceiptType = params["preferableReceiptType"].flatMap { ReceiptOption(rawValue: $0) }
         self.clientPhone = params["clientPhone"]
         self.clientEmail = params["clientEmail"]
+        self.fiscalize = params["fiscalize"].flatMap { Bool($0) }
     }
 }
 
